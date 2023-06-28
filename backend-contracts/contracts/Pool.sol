@@ -1,4 +1,130 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.8;
+pragma solidity ^0.8.7;
 
-contract Pool {}
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "./LiquidityToken.sol";
+
+error Pool__InvalidTokenRatio();
+error Pool__ZeroLiquidityToken();
+error Pool__InvalidToken();
+
+contract Pool is LiquidityToken {
+    IERC20 private immutable i_token0;
+    IERC20 private immutable i_token1;
+
+    uint256 private s_reserve0;
+    uint256 private s_reserve1;
+
+    constructor(address token0, address token1) LiquidityToken("Bhim", "BHIM") {
+        i_token0 = IERC20(token0);
+        i_token1 = IERC20(token1);
+    }
+
+    function _updateLiquidity(uint256 reserve0, uint256 reserve1) internal {
+        s_reserve0 = reserve0;
+        s_reserve1 = reserve1;
+    }
+
+    function swap(address _tokenIn, uint256 amountIn) internal {
+        // Objective: To Find amount of Token Out
+        if (_tokenIn == address(i_token0) || _tokenIn == address(i_token1)) {
+            revert Pool__InvalidToken();
+        }
+
+        bool isToken0 = _tokenIn == address(i_token0) ? true : false;
+
+        (
+            IERC20 tokenIn,
+            IERC20 tokenOut,
+            uint256 resIn,
+            uint256 resOut
+        ) = isToken0
+                ? (i_token0, i_token1, s_reserve0, s_reserve1)
+                : (i_token1, i_token0, s_reserve1, s_reserve0);
+
+        tokenIn.transferFrom(msg.sender, address(this), amountIn);
+
+        // xy = k
+        // (x + dx)(y - dy) = k
+        // xy - xdy + dxy -dxdy = xy (k=xy)
+        // dy(x + dx) = dxy
+        // dy = dxy/(x+dx)
+        uint amountInWithFee = (amountIn * 997) / 1000;
+        uint amountOut = (amountInWithFee * resOut) / (resIn + amountInWithFee);
+
+        (uint256 res0, uint256 res1) = isToken0
+            ? (resIn + amountIn, resOut - amountOut)
+            : (resOut - amountOut, resIn + amountIn);
+
+        _updateLiquidity(res0, res1);
+        tokenOut.transfer(msg.sender, amountOut);
+    }
+
+    function mint(uint256 amount0, uint256 amount1) internal {
+        // x/y = dx/dy
+        if (s_reserve0 > 0 || s_reserve1 > 0) {
+            if (s_reserve0 / s_reserve1 != amount0 / amount1)
+                revert Pool__InvalidTokenRatio();
+        }
+
+        i_token0.transferFrom(msg.sender, address(this), amount0);
+        i_token1.transferFrom(msg.sender, address(this), amount1);
+
+        // The Liquidity token minted should be proportional to Liquidity Provided
+        // x + dx/x = y + dy/y
+        // y(x + dx) = x(y + dy)
+        // yx + dxy = xy + dyx
+        // dxy = dyx
+        // dxy/x = dy
+
+        uint256 liquidityTokens;
+        uint256 liquidityTokenSupply = _getTokenSupply();
+        if (liquidityTokenSupply > 0) {
+            liquidityTokens = (amount0 * liquidityTokenSupply) / s_reserve0;
+        } else {
+            liquidityTokens = _sqrt(amount0 * amount1);
+        }
+
+        if (liquidityTokens == 0) revert Pool__ZeroLiquidityToken();
+        _mint(msg.sender, liquidityTokens);
+
+        _updateLiquidity(s_reserve0 + amount0, s_reserve1 + amount1);
+    }
+
+    function burn(uint256 liquidityTokens) internal {
+        require(liquidityTokens > 0, "0 Liquidity Tokens");
+
+        // t = totalSupply of shares
+        // s = shares
+        // l = liquidity (reserve0 || reserve1)
+        // dl = liquidity to be removed (amount0 || amount1)
+
+        // The change in liquidity/token reserves should be propotional to shares burned
+        // t - s/t = l - dl/l
+        // dl = ls/t
+
+        uint256 tokenBalance = _getBalanceOf(msg.sender);
+
+        uint256 amount0 = (s_reserve0 * tokenBalance) / _getTokenSupply();
+        uint256 amount1 = (s_reserve1 * tokenBalance) / _getTokenSupply();
+
+        _burn(msg.sender, liquidityTokens);
+        _updateLiquidity(s_reserve0 - amount0, s_reserve1 - amount1);
+
+        i_token0.transfer(msg.sender, amount0);
+        i_token1.transfer(msg.sender, amount1);
+    }
+
+    function _sqrt(uint y) private pure returns (uint z) {
+        if (y > 3) {
+            z = y;
+            uint x = y / 2 + 1;
+            while (x < z) {
+                z = x;
+                x = (y / x + x) / 2;
+            }
+        } else if (y != 0) {
+            z = 1;
+        }
+    }
+}
