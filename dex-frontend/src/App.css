@@ -1,0 +1,93 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+@font-face {
+  font-family: "Satoshi-Medium";
+  src: url("../public/fonts/Satoshi-Medium.woff2") format("woff2"),
+    url("../public/fonts/Satoshi-Medium.woff") format("woff");
+  font-weight: 400;
+  font-display: swap;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Satoshi-Black";
+  src: url("../public/fonts/Satoshi-Black.woff2") format("woff2"),
+    url("../public/fonts/Satoshi-Black.woff") format("woff");
+  font-weight: 900;
+  font-display: swap;
+  font-style: normal;
+}
+
+:root {
+  --color-primary: #e0f2fe;
+  --color-primary-dark: #0369a1;
+  --color-dark-grey: #374151;
+
+  --font-Satoshi-Black: "Satoshi-Black", sans-serif;
+  --font-poppins: "Poppins", sans-serif;
+  --font-satoshi-regular: "Satoshi-Medium", sans-serif;
+
+  /*  (black with 75% opacity for lightbox background) */
+}
+
+img {
+  width: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-satoshi-regular);
+  text-align: center;
+}
+
+button {
+  font-family: var(--font-satoshi-regular);
+  font-size: 21px;
+  font-weight: bold;
+}
+
+/* Utils */
+
+.btn {
+  padding: 10px 20px;
+  border-radius: 7px;
+  border: none;
+  cursor: pointer;
+  width: 100%;
+}
+
+.link {
+  text-decoration: none;
+  cursor: pointer;
+  margin: 0 10px;
+  color: var(--color-primary-dark);
+}
+
+/* App */
+
+.app {
+  height: 100vh;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background: rgb(255, 255, 255);
+  background: linear-gradient(5deg, white 0%, var(--color-primary) 86%);
+}
+
+/* Header */
+
+.header {
+  position: absolute;
+  top: 0;
+  padding: 10px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
