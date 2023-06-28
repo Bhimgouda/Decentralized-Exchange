@@ -15,9 +15,37 @@ contract Pool is LiquidityToken {
     uint256 private s_reserve0;
     uint256 private s_reserve1;
 
-    constructor(address token0, address token1) LiquidityToken("Bhim", "BHIM") {
+    uint private immutable i_fee;
+
+    event AddedLiquidity(
+        uint256 indexed liquidityToken,
+        address token0,
+        uint256 indexed amount0,
+        address token1,
+        uint256 indexed amount1
+    );
+    event RemovedLiquidity(
+        uint256 indexed liquidityToken,
+        address token0,
+        uint256 indexed amount0,
+        address token1,
+        uint256 indexed amount1
+    );
+    event Swapped(
+        address tokenIn,
+        uint256 indexed amountIn,
+        address tokenOut,
+        uint256 indexed amountOut
+    );
+
+    constructor(
+        address token0,
+        address token1,
+        uint8 fee
+    ) LiquidityToken("Bhim", "BHIM") {
         i_token0 = IERC20(token0);
         i_token1 = IERC20(token1);
+        i_fee = fee;
     }
 
     function _updateLiquidity(uint256 reserve0, uint256 reserve1) internal {
@@ -25,7 +53,7 @@ contract Pool is LiquidityToken {
         s_reserve1 = reserve1;
     }
 
-    function swap(address _tokenIn, uint256 amountIn) internal {
+    function swap(address _tokenIn, uint256 amountIn) external {
         // Objective: To Find amount of Token Out
         if (_tokenIn == address(i_token0) || _tokenIn == address(i_token1)) {
             revert Pool__InvalidToken();
@@ -58,9 +86,11 @@ contract Pool is LiquidityToken {
 
         _updateLiquidity(res0, res1);
         tokenOut.transfer(msg.sender, amountOut);
+
+        emit Swapped(address(tokenIn), amountIn, address(tokenOut), amountOut);
     }
 
-    function mint(uint256 amount0, uint256 amount1) internal {
+    function addLiquidity(uint256 amount0, uint256 amount1) external {
         // x/y = dx/dy
         if (s_reserve0 > 0 || s_reserve1 > 0) {
             if (s_reserve0 / s_reserve1 != amount0 / amount1)
@@ -89,9 +119,16 @@ contract Pool is LiquidityToken {
         _mint(msg.sender, liquidityTokens);
 
         _updateLiquidity(s_reserve0 + amount0, s_reserve1 + amount1);
+        emit AddedLiquidity(
+            liquidityTokens,
+            address(i_token0),
+            amount0,
+            address(i_token1),
+            amount1
+        );
     }
 
-    function burn(uint256 liquidityTokens) internal {
+    function removeLiquidity(uint256 liquidityTokens) external {
         require(liquidityTokens > 0, "0 Liquidity Tokens");
 
         // t = totalSupply of shares
@@ -113,6 +150,14 @@ contract Pool is LiquidityToken {
 
         i_token0.transfer(msg.sender, amount0);
         i_token1.transfer(msg.sender, amount1);
+
+        emit RemovedLiquidity(
+            liquidityTokens,
+            address(i_token0),
+            amount0,
+            address(i_token1),
+            amount1
+        );
     }
 
     function _sqrt(uint y) private pure returns (uint z) {
@@ -127,4 +172,13 @@ contract Pool is LiquidityToken {
             z = 1;
         }
     }
+
+    function getAmountOut(
+        address token,
+        uint256 amount
+    ) public view returns (uint256) {}
+
+    function getReserves() public view returns (uint256, uint256) {}
+
+    function getTokens() public view returns (address, address) {}
 }
