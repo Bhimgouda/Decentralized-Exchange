@@ -6,14 +6,10 @@ require("solidity-coverage")
 require("hardhat-deploy")
 
 // RPC URLs
-const MAINNET_RPC_URL =
-    process.env.MAINNET_RPC_URL ||
-    process.env.ALCHEMY_MAINNET_RPC_URL ||
-    "https://eth-mainnet.alchemyapi.io/v2/your-api-key"
-const SEPOLIA_RPC_URL =
-    process.env.SEPOLIA_RPC_URL || "https://eth-sepolia.g.alchemy.com/v2/YOUR-API-KEY"
-const POLYGON_MAINNET_RPC_URL =
-    process.env.POLYGON_MAINNET_RPC_URL || "https://polygon-mainnet.alchemyapi.io/v2/your-api-key"
+const MAINNET_RPC_URL = process.env.ETHEREUM_MAINNET_RPC_URL || ""
+const SEPOLIA_RPC_URL = process.env.SEPOLIA_RPC_URL || ""
+const POLYGON_MAINNET_RPC_URL = process.env.POLYGON_MAINNET_RPC_URL || ""
+const BUILDBEAR_ETH_RPC_URL = process.env.BUILDBEAR_ETH_RPC_URL || ""
 
 // PRIVATE KEY
 const PRIVATE_KEY = process.env.PRIVATE_KEY || "0x"
@@ -62,6 +58,13 @@ module.exports = {
       saveDeployments: true,
       chainId: 137,
       blockConfirmations: 5
+    },
+    buildBearEth: {
+      url: BUILDBEAR_ETH_RPC_URL,
+      accounts: PRIVATE_KEY ? [PRIVATE_KEY] : [],
+      saveDeployments: true,
+      chainId: 9709,
+      blockConfirmations: 1
     }
   },
   namedAccounts: {

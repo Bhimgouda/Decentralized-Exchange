@@ -2,36 +2,48 @@
 pragma solidity ^0.8.7;
 
 import "./Pool.sol";
+import "hardhat/console.sol";
 
 error PoolFactory__PairAlreadyExists();
 
-struct PoolStruct {
-    address poolAddress;
-    uint8 fee;
-}
-
 contract PoolFactory {
-    mapping(address => mapping(address => PoolStruct)) private s_pools;
+    address[3][] private s_poolsList;
+    mapping(address => mapping(address => PoolStruct)) private s_tokensToPool;
 
-    constructor() {}
+    struct PoolStruct {
+        address poolAddress;
+        uint8 fee;
+    }
+
+    event PoolCreated(
+        address indexed token0,
+        address indexed token1,
+        uint fee,
+        address indexed poolAdress
+    );
 
     function createPool(
         address token0,
         address token1,
         uint8 fee
     ) external returns (address) {
-        require(fee > 100, "Fee cannot be more than 1%");
+        require(fee <= 100, "Fee cannot be more than 1%");
         require(token0 != token1, "Same token Not Allowed");
-        if (
-            s_pools[token0][token1].fee == fee ||
-            s_pools[token0][token1].fee == fee
-        ) {
-            revert PoolFactory__PairAlreadyExists();
-        }
+        require(
+            s_tokensToPool[token0][token1].fee != fee &&
+                s_tokensToPool[token1][token0].fee != fee,
+            "Token Pair Already exists"
+        );
 
         Pool pool = new Pool(token0, token1, fee);
-        s_pools[token0][token1] = PoolStruct(address(pool), fee);
-        return address(pool);
+        console.log(address(pool));
+        address poolAddress = address(pool);
+
+        s_tokensToPool[token0][token1] = PoolStruct(poolAddress, fee);
+        s_poolsList.push([token0, token1, poolAddress]);
+
+        emit PoolCreated(token0, token1, fee, poolAddress);
+        return address(poolAddress);
     }
 
     function getPool(
@@ -39,10 +51,15 @@ contract PoolFactory {
         address token1,
         uint8 fee
     ) external view returns (address) {
-        if (s_pools[token0][token1].fee == fee)
-            return s_pools[token0][token1].poolAddress;
-        if (s_pools[token1][token0].fee == fee)
-            return s_pools[token1][token0].poolAddress;
+        console.log("hey");
+        if (s_tokensToPool[token0][token1].fee == fee)
+            return s_tokensToPool[token0][token1].poolAddress;
+        if (s_tokensToPool[token1][token0].fee == fee)
+            return s_tokensToPool[token1][token0].poolAddress;
         else return address(0);
+    }
+
+    function getAllPools() external view returns (address[3][] memory) {
+        return s_poolsList;
     }
 }

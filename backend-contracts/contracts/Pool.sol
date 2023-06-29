@@ -42,7 +42,7 @@ contract Pool is LiquidityToken {
         address token0,
         address token1,
         uint8 fee
-    ) LiquidityToken("Bhim", "BHIM") {
+    ) LiquidityToken("LiquidityToken", "LT") {
         i_token0 = IERC20(token0);
         i_token1 = IERC20(token1);
         i_fee = fee;
@@ -55,6 +55,7 @@ contract Pool is LiquidityToken {
 
     function swap(address _tokenIn, uint256 amountIn) external {
         // Objective: To Find amount of Token Out
+
         if (_tokenIn == address(i_token0) || _tokenIn == address(i_token1)) {
             revert Pool__InvalidToken();
         }
