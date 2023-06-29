@@ -51,7 +51,6 @@ contract PoolFactory {
         address token1,
         uint8 fee
     ) external view returns (address) {
-        console.log("hey");
         if (s_tokensToPool[token0][token1].fee == fee)
             return s_tokensToPool[token0][token1].poolAddress;
         if (s_tokensToPool[token1][token0].fee == fee)
