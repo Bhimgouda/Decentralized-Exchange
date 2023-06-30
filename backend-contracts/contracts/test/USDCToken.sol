@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-contract USDC {
+contract USDCToken {
     string public name = "USDC";
     string public symbol = "USDC";
     uint8 public decimals = 18;
