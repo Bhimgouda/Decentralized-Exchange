@@ -1,5 +1,6 @@
 {
   "name": "dex-contracts",
+  
   "devDependencies": {
     "@nomiclabs/hardhat-ethers": "npm:hardhat-deploy-ethers",
     "@nomiclabs/hardhat-etherscan": "^3.0.3",

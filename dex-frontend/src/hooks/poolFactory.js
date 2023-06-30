@@ -27,7 +27,9 @@ function poolFactoryCaller(functionName, params){
 
 export async function createPool(token0, token1, fee){
     const tx = await poolFactoryCaller("createPool", {token0, token1, fee})
-    await tx.wait(1)
+    const receipt = await tx.wait(1)
+    const {poolAddress} = receipt.events[0].args
+    return poolAddress
 }
 
 export async function getPool(token0, token1, fee){
@@ -36,5 +38,4 @@ export async function getPool(token0, token1, fee){
 
 export async function getAllPools(){
     const allPools = await poolFactoryCaller("getAllPools", {});
-    
 }

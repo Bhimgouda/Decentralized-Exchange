@@ -19,14 +19,10 @@ contract PoolFactory {
         address indexed token0,
         address indexed token1,
         uint fee,
-        address indexed poolAdress
+        address indexed poolAddress
     );
 
-    function createPool(
-        address token0,
-        address token1,
-        uint8 fee
-    ) external returns (address) {
+    function createPool(address token0, address token1, uint8 fee) external {
         require(fee <= 100, "Fee cannot be more than 1%");
         require(token0 != token1, "Same token Not Allowed");
         require(
@@ -36,14 +32,12 @@ contract PoolFactory {
         );
 
         Pool pool = new Pool(token0, token1, fee);
-        console.log(address(pool));
         address poolAddress = address(pool);
 
         s_tokensToPool[token0][token1] = PoolStruct(poolAddress, fee);
         s_poolsList.push([token0, token1, poolAddress]);
 
         emit PoolCreated(token0, token1, fee, poolAddress);
-        return address(poolAddress);
     }
 
     function getPool(

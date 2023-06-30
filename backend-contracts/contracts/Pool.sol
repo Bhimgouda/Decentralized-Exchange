@@ -53,15 +53,13 @@ contract Pool is LiquidityToken {
         s_reserve1 = reserve1;
     }
 
-    function swap(
-        address _tokenIn,
-        uint256 amountIn
-    ) external returns (uint256 amountOut) {
+    function swap(address _tokenIn, uint256 amountIn) external {
         // Objective: To Find amount of Token Out
 
-        if (_tokenIn == address(i_token0) || _tokenIn == address(i_token1)) {
-            revert Pool__InvalidToken();
-        }
+        require(
+            _tokenIn == address(i_token0) || _tokenIn == address(i_token1),
+            "Invalid Token"
+        );
 
         bool isToken0 = _tokenIn == address(i_token0) ? true : false;
 
@@ -81,8 +79,9 @@ contract Pool is LiquidityToken {
         // xy - xdy + dxy -dxdy = xy (k=xy)
         // dy(x + dx) = dxy
         // dy = dxy/(x+dx)
-        uint amountInWithFee = (amountIn * 997) / 1000;
-        amountOut = (amountInWithFee * resOut) / (resIn + amountInWithFee);
+        uint amountInWithFee = (amountIn * (10000 - i_fee)) / 1000;
+        uint256 amountOut = (amountInWithFee * resOut) /
+            (resIn + amountInWithFee);
 
         (uint256 res0, uint256 res1) = isToken0
             ? (resIn + amountIn, resOut - amountOut)
@@ -94,10 +93,7 @@ contract Pool is LiquidityToken {
         emit Swapped(address(tokenIn), amountIn, address(tokenOut), amountOut);
     }
 
-    function addLiquidity(
-        uint256 amount0,
-        uint256 amount1
-    ) external returns (uint256 liquidityTokens) {
+    function addLiquidity(uint256 amount0, uint256 amount1) external {
         // x/y = dx/dy
         if (s_reserve0 > 0 || s_reserve1 > 0) {
             if (s_reserve0 / s_reserve1 != amount0 / amount1)
@@ -114,7 +110,8 @@ contract Pool is LiquidityToken {
         // dxy = dyx
         // dxy/x = dy
 
-        uint256 liquidityTokenSupply = _getTokenSupply();
+        uint256 liquidityTokenSupply = totalSupply();
+        uint256 liquidityTokens;
         if (liquidityTokenSupply > 0) {
             liquidityTokens = (amount0 * liquidityTokenSupply) / s_reserve0;
         } else {
@@ -123,8 +120,8 @@ contract Pool is LiquidityToken {
 
         if (liquidityTokens == 0) revert Pool__ZeroLiquidityToken();
         _mint(msg.sender, liquidityTokens);
-
         _updateLiquidity(s_reserve0 + amount0, s_reserve1 + amount1);
+
         emit AddedLiquidity(
             liquidityTokens,
             address(i_token0),
@@ -134,9 +131,7 @@ contract Pool is LiquidityToken {
         );
     }
 
-    function removeLiquidity(
-        uint256 liquidityTokens
-    ) external returns (uint256 amount0, uint256 amount1) {
+    function removeLiquidity(uint256 liquidityTokens) external {
         require(liquidityTokens > 0, "0 Liquidity Tokens");
 
         // t = totalSupply of shares
@@ -148,10 +143,10 @@ contract Pool is LiquidityToken {
         // t - s/t = l - dl/l
         // dl = ls/t
 
-        uint256 tokenBalance = _getBalanceOf(msg.sender);
+        uint256 tokenBalance = balanceOf(msg.sender);
 
-        amount0 = (s_reserve0 * tokenBalance) / _getTokenSupply();
-        amount1 = (s_reserve1 * tokenBalance) / _getTokenSupply();
+        uint256 amount0 = (s_reserve0 * tokenBalance) / totalSupply();
+        uint256 amount1 = (s_reserve1 * tokenBalance) / totalSupply();
 
         _burn(msg.sender, liquidityTokens);
         _updateLiquidity(s_reserve0 - amount0, s_reserve1 - amount1);
@@ -185,16 +180,17 @@ contract Pool is LiquidityToken {
         address _tokenIn,
         uint256 amountIn
     ) public view returns (uint256 amountOut) {
-        if (_tokenIn == address(i_token0) || _tokenIn == address(i_token1)) {
-            revert Pool__InvalidToken();
-        }
+        require(
+            _tokenIn == address(i_token0) || _tokenIn == address(i_token1),
+            "Invalid Token"
+        );
 
         bool isToken0 = _tokenIn == address(i_token0) ? true : false;
 
         (uint256 resIn, uint256 resOut) = isToken0
             ? (s_reserve0, s_reserve1)
             : (s_reserve1, s_reserve0);
-        uint amountInWithFee = (amountIn * 997) / 1000;
+        uint amountInWithFee = (amountIn * (10000 - i_fee)) / 10000;
         amountOut = (amountInWithFee * resOut) / (resIn + amountInWithFee);
     }
 
