@@ -1,63 +1,76 @@
 import POOL_ABI from "../constants/poolAbi.json"
-import {useWeb3Contract} from "react-moralis"
-import { BigNumber } from "@ethersproject/bignumber";
-import { formatEther } from "ethers";
-
-const {runContractFunction} = useWeb3Contract()
+import { utils } from "ethers";
+import { error } from "../utils/toastWrapper";
 
 const poolFunctionParams = {
     abi: POOL_ABI
 }
 
 function handleContractError(e){
-    handleLoading(false)
+    // handleLoading(false)
     error(e.error?.message || e.message)
 }
 
-function poolCaller(functionName, params){
+function poolCaller(runContractFunction, contractAddress, functionName, params, ){
     return runContractFunction({
-        params: {...poolFunctionParams, functionName, params},
-        onError: handleContractError
+        params: {...poolFunctionParams, contractAddress, functionName, params},
     })
 }
 
 // HOOK
 
-export async function swap(_tokenIn, amountIn){
-    const tx = await poolCaller("swap", {_tokenIn, amountIn})
-    const receipt = await tx.wait(1)
-    const {amountOut} = receipt.events[0].args
-    return formatEther(BigNumber.toFixed(amountOut, 2).toString())
+export async function swap(runContractFunction, contractAddress, _tokenIn, amountIn){
+    try{
+        amountIn = utils.parseEther(amountIn.toString()).toString()
+        const tx = await poolCaller(runContractFunction, contractAddress, "swap", {_tokenIn, amountIn}, )
+        const receipt = await tx.wait(1)
+        const {amountOut} = receipt.events[0].args
+        return utils.formatUnits(amountOut, "ether")
+    } catch(e){
+        // handleLoading(false)
+        error(e.error?.message || e.message)
+    }
 }
 
-export async function addLiquidity(amount0, amount1){
-    const tx = await poolCaller("addLiquidity", {amount0, amount1})
+export async function addLiquidity(runContractFunction, contractAddress, amount0, amount1){
+    amount0 = utils.parseEther(amount0.toString()).toString()
+    amount1 = utils.parseEther(amount1.toString()).toString()
+
+    const tx = await poolCaller(runContractFunction, contractAddress,"addLiquidity", {amount0, amount1})
     const receipt = await tx.wait(1)
     const {liquidityToken} = receipt.events[0].args
-    return formatEther(BigNumber.toFixed(liquidityToken, 2).toString())
+    return utils.formatUnits(liquidityToken, "ether")
 }
 
-export async function removeLiquidity(liquidityTokens){
-    const tx = await poolCaller("removeLiquidity", {liquidityTokens})
+// come back later for liquidity tokens decimal
+export async function removeLiquidity(runContractFunction, contractAddress, liquidityTokens){
+    const tx = await poolCaller(runContractFunction, contractAddress,"removeLiquidity", {liquidityTokens})
     const receipt = await tx.wait(1)
     let {token0, amount0, token1, amount1} = receipt.events[0].args
-    amount0 = formatEther(BigNumber.toFixed(amount0, 2).toString())
-    amount1 = formatEther(BigNumber.toFixed(amount1, 2).toString())
+    amount0 = utils.formatUnits(amount0, "ether")
+    amount1 = utils.formatUnits(amount1, "ether")
     return {token0, amount0, token1, amount1}
 }
 
-export async function getAmountOut(_tokenIn, amountIn){
-    const amountOut = await poolCaller("getAmountOut", {_tokenIn, amountIn})
-    return formatEther(BigNumber.toFixed(amountOut, 2).toString())
+export async function getAmountOut(runContractFunction, contractAddress,_tokenIn, amountIn){
+    try{
+        amountIn = utils.parseEther(amountIn).toString()
+        const amountOut = await poolCaller(runContractFunction, contractAddress,"getAmountOut", {_tokenIn, amountIn})
+        console.log(amountOut)
+        if(amountOut._hex.startsWith("0x00")) return 0
+        return utils.formatUnits(amountOut, "ether")
+    } catch(e){
+        // handleLoading(false)
+        error(e.error?.message || e.message)
+    }
 }
 
-export async function getReserves(){
-    let reserves = await poolCaller("getReserves", {})
-    reserves = reserves.map(reserve=>formatEther(BigNumber.toFixed(reserve, 2).toString()))
+export async function getReserves(runContractFunction, contractAddress){
+    let reserves = await poolCaller(runContractFunction, contractAddress,"getReserves", {})
+    reserves = reserves.map(reserve=>utils.formatUnits(reserve, "ether"))
     return {reserve0: reserves[0], reserve1: reserves[1]}
 }
 
-export async function getTokens(){
-    const tokenAddresses = await poolCaller("getTokens", {})
-    return {token0: tokenAddresses[0], token1: tokenAddresses[1]}
+export async function getTokens(runContractFunction, contractAddress){
+    return poolCaller(runContractFunction, contractAddress,"getTokens", {})
 }

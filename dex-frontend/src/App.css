@@ -50,6 +50,10 @@ button {
   font-weight: bold;
 }
 
+select {
+  font-family: var(--font-satoshi-regular);
+}
+
 /* Utils */
 
 .btn {
@@ -58,6 +62,12 @@ button {
   border: none;
   cursor: pointer;
   width: 100%;
+}
+
+.btn--tokens {
+  background: white;
+  color: var(--color-primary-dark);
+  width: max-content;
 }
 
 .link {

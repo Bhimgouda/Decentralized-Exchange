@@ -7,8 +7,11 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
 
     if(developmentChains.includes(network.name)){
         log("----------------------------------------")
-        const argsMatic = [ethers.utils.parseEther("1000").toString()]
-        const argsUsdc = [ethers.utils.parseEther("10000").toString()]
+        const argsMatic = ["10000"]
+        const argsUsdc = ["1000000"]
+        const argsCardano = ["11000"]
+        const argsShibaInu = ["1000000"]
+        const argsSolana = ["21000"]
 
         await deploy("MaticToken", {
             from: deployer,
@@ -19,6 +22,24 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
         await deploy("USDCToken", {
             from: deployer,
             args: argsUsdc,
+            log: true,
+            waitConfirmations: network.config.blockConfirmations || 1,
+        })
+        await deploy("SolanaToken", {
+            from: deployer,
+            args: argsSolana,
+            log: true,
+            waitConfirmations: network.config.blockConfirmations || 1,
+        })
+        await deploy("CardanoToken", {
+            from: deployer,
+            args: argsCardano,
+            log: true,
+            waitConfirmations: network.config.blockConfirmations || 1,
+        })
+        await deploy("ShibaInuToken", {
+            from: deployer,
+            args: argsShibaInu,
             log: true,
             waitConfirmations: network.config.blockConfirmations || 1,
         })

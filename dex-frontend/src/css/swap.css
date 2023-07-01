@@ -2,16 +2,29 @@
   background: white;
   border-radius: 21px;
   padding: 5px;
+  position: relative;
+}
+
+.swap__token {
+  background: var(--color-primary);
+  padding: 20px 15px;
+  border-radius: 10px;
+  margin-bottom: 2.5px;
+  display: flex;
+}
+
+.swap__token select {
+  padding: 5px 10px;
+  border-radius: 10px;
+  border: none;
+  outline: none;
 }
 
 .swap__token input {
   border: none;
-  outline: none;
-  padding: 20px 15px;
-  border-radius: 10px;
   background: var(--color-primary);
+  outline: none;
   font-size: 31px;
-  margin-bottom: 2.5px;
 }
 
 .swap__token input::-webkit-inner-spin-button,
