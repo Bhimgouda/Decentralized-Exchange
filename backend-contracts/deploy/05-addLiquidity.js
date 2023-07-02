@@ -24,14 +24,15 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
         const MaticUsdc = await ethers.getContractAt("Pool", (await poolFactory.getPool(maticToken.address, usdcToken.address, fee)), deployer);
         const ShibUsdc = await ethers.getContractAt("Pool", (await poolFactory.getPool(shibaInuToken.address, usdcToken.address, fee)), deployer);
         const adaUsdc = await ethers.getContractAt("Pool", (await poolFactory.getPool(cardanoToken.address, usdcToken.address, fee)), deployer);
-        const maticSol = await ethers.getContractAt("Pool", (await poolFactory.getPool(maticToken.address, solanaToken.address, fee)), deployer);
-        const solAda = await ethers.getContractAt("Pool", (await poolFactory.getPool(solanaToken.address, cardanoToken.address, fee)), deployer);
-        const shibMatic = await ethers.getContractAt("Pool", (await poolFactory.getPool(shibaInuToken.address, maticToken.address, fee)), deployer);
+        // const maticSol = await ethers.getContractAt("Pool", (await poolFactory.getPool(maticToken.address, solanaToken.address, fee)), deployer);
+        // const solAda = await ethers.getContractAt("Pool", (await poolFactory.getPool(solanaToken.address, cardanoToken.address, fee)), deployer);
+        // const shibMatic = await ethers.getContractAt("Pool", (await poolFactory.getPool(shibaInuToken.address, maticToken.address, fee)), deployer);
 
-        const pools = [[solanaToken, usdcToken, SolUsdc], [maticToken, usdcToken, MaticUsdc], [shibaInuToken, usdcToken, ShibUsdc], [cardanoToken, usdcToken, adaUsdc], [maticToken, solanaToken, maticSol], [solanaToken, cardanoToken, solAda], [shibaInuToken, maticToken, shibMatic]]
+        const pools = [[solanaToken, usdcToken, SolUsdc], [maticToken, usdcToken, MaticUsdc], [shibaInuToken, usdcToken, ShibUsdc], [cardanoToken, usdcToken, adaUsdc]]
+        // ,[maticToken, solanaToken, maticSol], [solanaToken, cardanoToken, solAda], [shibaInuToken, maticToken, shibMatic]]
 
-        const amount0 = ethers.utils.parseUnits("100", 18).toString();
-        const amount1 = ethers.utils.parseUnits("1000", 18).toString();
+        const amount0 = ethers.utils.parseUnits("100000", 18).toString();
+        const amount1 = ethers.utils.parseUnits("200000", 18).toString();
 
         for(let pool of pools){
             const spenderAddress = pool[2].address
@@ -39,7 +40,8 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
             await tx0.wait(1)
             const tx1 = await pool[1].approve(spenderAddress, amount1)
             await tx1.wait(1)
-            await pool[2].addLiquidity(amount0, amount1)
+            const tx3 = await pool[2].addLiquidity(amount0, amount1)
+            await tx3.wait()
         }
         
     }

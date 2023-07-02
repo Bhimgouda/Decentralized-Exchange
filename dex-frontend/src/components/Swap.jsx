@@ -2,17 +2,17 @@ import { useEffect, useState } from "react"
 import "../css/swap.css"
 import { useMoralis, useWeb3Contract } from "react-moralis"
 import { getAllPools, getPool } from "../hooks/poolFactory"
-import truncateStr from "../utils/truncate"
 import { getTokenData } from "../hooks/tokens"
 import GetTokensBtn from "./GetTokensBtn"
 import { getAmountOut } from "../hooks/pool"
+import { success } from "../utils/toastWrapper"
 
 const Swap = ({CHAIN_ID}) => {
     const [tokenAddresses, setTokenAddresses] = useState([])
     const [tokens, setTokens] = useState([])
     const [poolAddress, setPoolAddress] = useState("")
 
-    const [swapStatus, setSwapStatus] = useState({display: "Swap", disabled: false})
+    const [swapStatus, setSwapStatus] = useState({display: "Swap", disabled: true})
 
     const [amount0, setAmount0] = useState("0")
     const [amount1, setAmount1] = useState("0")
@@ -69,8 +69,16 @@ const Swap = ({CHAIN_ID}) => {
 
     async function gettingPool(){
         const address = await getPool(token0.address, token1.address, 0.5, runContractFunction);
-        if(address.startsWith("0x00")) return setSwapStatus({display: "Insufficient Funds in Pool", disabled: true})
-        if(swapStatus.disabled){
+        if(address.startsWith("0x00")){
+            setAmount1("0")
+            return setSwapStatus({display: "Insufficient Funds in Pool", disabled: true})
+        }
+
+        if(!parseInt(amount0)){
+            setSwapStatus({display: "Swap", disabled: true})
+        }
+
+        if(parseInt(amount0) && swapStatus.disabled){
             setSwapStatus({display: "Swap", disabled: false})
         }
         setPoolAddress(address)
@@ -78,12 +86,21 @@ const Swap = ({CHAIN_ID}) => {
 
     const handleAmount0Change = async(e)=>{
         setAmount0(e.target.value)
-        if(e.target.value === "0" || e.target.value === "") return
+
+        if(parseInt(e.target.value) > parseInt(token0.balance)) return setSwapStatus({display: "Insufficient Balance", disabled: true})
+        
+        if(!parseInt(e.target.value)) {
+            setSwapStatus({display: "Swap", disabled: true})
+            return setAmount1("0")
+        }
+        
         const amountOut = await getAmountOut(runContractFunction, poolAddress, token0.address, e.target.value)
+
         if(amountOut === 0) return setSwapStatus({display: "Insufficient Liquidity", disabled: true})
         if(swapStatus.disabled){
             setSwapStatus({display: "Swap", disabled: false})
         }
+
         setAmount1(amountOut)
     }
     const handleAmount1Change = async(e)=>{
@@ -100,8 +117,9 @@ const Swap = ({CHAIN_ID}) => {
     }
 
     const handleSwap = async(e)=>{
-        e.preventDefault();
-        console.log("swapping Baby")
+        e.preventDefault()
+        if(swapStatus.disabled) return
+        success("SWAPPING")
     }
 
     return ( 
@@ -112,7 +130,7 @@ const Swap = ({CHAIN_ID}) => {
                 <div className="swap__token">
                     <div style={{display: "flex", flexDirection: "column", alignItems: "flex-start", position: "relative"}}>
                         <input onChange={handleAmount0Change} value={amount0} name="amount0" type="number" />
-                        <div style={{fontSize: "13px", position: "absolute", bottom: "-14px"}}>Balance: {token0.balance} {token0.name}</div>
+                        <div style={{fontSize: "13px", position: "absolute", bottom: "-14px"}}>Balance: {token0.balance - amount0} {token0.name}</div>
                     </div>
                     <select value={token0.address} onChange={handletoken0Select} name="token1" id="token1">
                         {tokens.map((token, i)=><option key={i} value={token.address}>{token.name}</option>)}

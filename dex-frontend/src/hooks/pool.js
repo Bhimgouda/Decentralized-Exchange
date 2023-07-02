@@ -56,7 +56,6 @@ export async function getAmountOut(runContractFunction, contractAddress,_tokenIn
     try{
         amountIn = utils.parseEther(amountIn).toString()
         const amountOut = await poolCaller(runContractFunction, contractAddress,"getAmountOut", {_tokenIn, amountIn})
-        console.log(amountOut)
         if(amountOut._hex.startsWith("0x00")) return 0
         return utils.formatUnits(amountOut, "ether")
     } catch(e){

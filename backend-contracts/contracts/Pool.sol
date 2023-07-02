@@ -18,7 +18,7 @@ contract Pool is LiquidityToken {
     uint256 private s_reserve0;
     uint256 private s_reserve1;
 
-    uint private immutable i_fee;
+    uint256 private immutable i_fee;
 
     event AddedLiquidity(
         uint256 indexed liquidityToken,
@@ -82,7 +82,7 @@ contract Pool is LiquidityToken {
         // xy - xdy + dxy -dxdy = xy (k=xy)
         // dy(x + dx) = dxy
         // dy = dxy/(x+dx)
-        uint amountInWithFee = (amountIn * (10000 - i_fee)) / 1000;
+        uint256 amountInWithFee = (amountIn * (10000 - i_fee)) / 1000;
         uint256 amountOut = (amountInWithFee * resOut) /
             (resIn + amountInWithFee);
 
@@ -166,10 +166,10 @@ contract Pool is LiquidityToken {
         );
     }
 
-    function _sqrt(uint y) private pure returns (uint z) {
+    function _sqrt(uint256 y) private pure returns (uint256 z) {
         if (y > 3) {
             z = y;
-            uint x = y / 2 + 1;
+            uint256 x = y / 2 + 1;
             while (x < z) {
                 z = x;
                 x = (y / x + x) / 2;
@@ -193,7 +193,7 @@ contract Pool is LiquidityToken {
         (uint256 resIn, uint256 resOut) = isToken0
             ? (s_reserve0, s_reserve1)
             : (s_reserve1, s_reserve0);
-        uint amountInWithFee = (amountIn * (10000 - i_fee)) / 10000;
+        uint256 amountInWithFee = (amountIn * (10000 - i_fee)) / 10000;
         amountOut = (amountInWithFee * resOut) / (resIn + amountInWithFee);
     }
 
