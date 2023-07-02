@@ -1,23 +1,16 @@
 import { useEffect, useState } from "react"
 import "../css/swap.css"
 import { useMoralis, useWeb3Contract } from "react-moralis"
-import { getAllPools } from "../hooks/poolFactory"
-import { approveToken, getTokenData } from "../hooks/tokens"
+import { approveToken } from "../hooks/tokens"
 import GetTokensBtn from "./GetTokensBtn"
 import { getAmountOut, swap } from "../hooks/pool"
 import { error, success } from "../utils/toastWrapper"
 
-const Swap = ({CHAIN_ID}) => {
+const Swap = ({CHAIN_ID, tokenAddresses, tokens, increaseSwapCount, swapCount}) => {
     // Initial Data
-    const [poolAddresses, setPoolAddresses] = useState([])   // [[token0], [token1], [pooladdress]]
-    const [tokenAddresses, setTokenAddresses] = useState([]) // addresses
-    
-    const [tokens, setTokens] = useState({}) // Main object of tokens with pairs
-
     const [currentPoolAddress, setCurrentPoolAddress] = useState("")        // address
 
     const [swapStatus, setSwapStatus] = useState({display: "Swap", disabled: true})
-    const [swapCount, setSwapCount] = useState(0);
 
     const [amount0, setAmount0] = useState("") // string numbers
     const [amount1, setAmount1] = useState("") // string numbers
@@ -25,53 +18,17 @@ const Swap = ({CHAIN_ID}) => {
     const [token1, setToken1] = useState({}) // token
     
     const {runContractFunction} = useWeb3Contract()
-    const {account, web3} = useMoralis()
-
-    const fee = 50; // 0.5
-    
-    useEffect(()=>{
-        fetchPools()
-    }, [])
-
-    async function fetchPools(){
-        try {
-            const pools = await getAllPools(runContractFunction)
-            setPoolAddresses(pools)
-        } catch(e){
-            error(e.error?.message || e.message)
-        }
-    }
+    const {web3} = useMoralis()
 
     useEffect(()=>{
-        if(!poolAddresses.length) return
+        if(!tokens[tokenAddresses[0]]) return
 
-        const tokensLookup = {}
-        const tempTokenAddresses = []
-
-        poolAddresses.forEach(pool=>{
-            if(!tokensLookup[pool[0]]){
-                tokensLookup[pool[0]] = true;
-                tempTokenAddresses.push(pool[0])
-            }
-            if(!tokensLookup[pool[1]]){
-                tokensLookup[pool[1]] = true;
-                tempTokenAddresses.push(pool[1])
-            }
-        })
-        
-        setTokenAddresses(tempTokenAddresses)
-    }, [poolAddresses])
-
-   
+        setToken0(tokens[tokenAddresses[0]])
+    }, [tokens])
 
     useEffect(()=>{
-        if(!tokenAddresses.length) return
-
         refreshUiAfterSwap()
-        
-        
-        gettingTokenData()
-    },[tokenAddresses, account, swapCount])
+    }, [swapCount])
 
     function refreshUiAfterSwap(){
         setAmount0("")
@@ -79,24 +36,9 @@ const Swap = ({CHAIN_ID}) => {
         setSwapStatus({display: "Swap", disabled: true})
     }
 
-    async function gettingTokenData(){
-        const tempTokens = {}
-        for(let tokenAddress of tokenAddresses){
-            const tempToken = await getTokenData(runContractFunction, tokenAddress, account)
-            tempTokens[tempToken.address] = {...tempToken, pairs: {}}
-        }
-
-        poolAddresses.forEach(pool=>{
-            tempTokens[pool[0]].pairs[pool[1]] = pool[2]
-            tempTokens[pool[1]].pairs[pool[0]] = pool[2]
-        })
-
-        setToken0(tempTokens[tokenAddresses[0]])
-        setTokens(tempTokens)
-    }
-
     useEffect(()=>{
         if(!token0.address || !token1.address) return
+
         setCurrentPoolAddress(token0.pairs[token1.address])
     }, [token0, token1])
 
@@ -117,7 +59,7 @@ const Swap = ({CHAIN_ID}) => {
                     setSwapStatus({display: "Insufficient Wallet Balance", disabled: true})
                 }
     
-                setSwapStatus({display: "Swap", disabled: false})
+                else setSwapStatus({display: "Swap", disabled: false})
             } else {
                 amountOut = 0
                 setSwapStatus({display: "Swap", disabled: true})
@@ -141,12 +83,12 @@ const Swap = ({CHAIN_ID}) => {
     const handleSwap = async(e)=>{
         e.preventDefault()
         try{
-            if(swapStatus.disabled || !token0.address || !token1.address || !currentPoolAddress ) return error("Please check your swap values")
+            if(swapStatus.disabled || !token0.address || !token1.address || !currentPoolAddress || parseInt(amount0) > parseInt(token0.balance)) return error("Please check your swap values")
 
             setSwapStatus({display: "Swapping", disabled: true})
             await approveToken(token0.address, currentPoolAddress, amount0)
             const amountOut = await swap(runContractFunction, currentPoolAddress, token0.address, amount0)
-            setSwapCount(swapCount+1)
+            increaseSwapCount()
             success(`Swapped ${amount0} ${token0.name} for ${amountOut} ${token1.name}`)
         } catch(e){
             error(e.error?.message || e.message)
