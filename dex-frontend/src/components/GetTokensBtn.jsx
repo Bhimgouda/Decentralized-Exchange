@@ -2,8 +2,8 @@ import { addTestToken } from "../utils/getTestTokens";
 
 const GetTokensBtn = ({web3, tokens}) => {
     const handleGetTestTokens = async()=>{
-        for(let token of tokens){
-            await addTestToken(web3, token)
+        for(let token in tokens){
+            await addTestToken(web3, tokens[token])
         }
     }
 

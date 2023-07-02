@@ -10,7 +10,7 @@ import { Toaster } from 'react-hot-toast';
 
 function App() {
   const {isWeb3Enabled, web3, chainId, account} = useMoralis()
-  const CHAIN_ID = 31337
+  const CHAIN_ID = 9709
 
 
   useEffect(()=>{

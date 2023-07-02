@@ -82,7 +82,7 @@ contract Pool is LiquidityToken {
         // xy - xdy + dxy -dxdy = xy (k=xy)
         // dy(x + dx) = dxy
         // dy = dxy/(x+dx)
-        uint256 amountInWithFee = (amountIn * (10000 - i_fee)) / 1000;
+        uint256 amountInWithFee = (amountIn * (10000 - i_fee)) / 10000;
         uint256 amountOut = (amountInWithFee * resOut) /
             (resIn + amountInWithFee);
 

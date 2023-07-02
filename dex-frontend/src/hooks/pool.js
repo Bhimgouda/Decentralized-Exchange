@@ -1,14 +1,8 @@
 import POOL_ABI from "../constants/poolAbi.json"
 import { utils } from "ethers";
-import { error } from "../utils/toastWrapper";
 
 const poolFunctionParams = {
     abi: POOL_ABI
-}
-
-function handleContractError(e){
-    // handleLoading(false)
-    error(e.error?.message || e.message)
 }
 
 function poolCaller(runContractFunction, contractAddress, functionName, params, ){
@@ -17,19 +11,15 @@ function poolCaller(runContractFunction, contractAddress, functionName, params, 
     })
 }
 
-// HOOK
+// HOOKs
 
 export async function swap(runContractFunction, contractAddress, _tokenIn, amountIn){
-    try{
-        amountIn = utils.parseEther(amountIn.toString()).toString()
-        const tx = await poolCaller(runContractFunction, contractAddress, "swap", {_tokenIn, amountIn}, )
-        const receipt = await tx.wait(1)
-        const {amountOut} = receipt.events[0].args
-        return utils.formatUnits(amountOut, "ether")
-    } catch(e){
-        // handleLoading(false)
-        error(e.error?.message || e.message)
-    }
+    amountIn = utils.parseEther(amountIn.toString()).toString()
+    const tx = await poolCaller(runContractFunction, contractAddress, "swap", {_tokenIn, amountIn})
+    const receipt = await tx.wait(1)
+    const {amountOut} = receipt.events[2].args
+
+    return parseFloat(utils.formatUnits(amountOut, "ether")).toFixed().toString()
 }
 
 export async function addLiquidity(runContractFunction, contractAddress, amount0, amount1){
@@ -53,15 +43,10 @@ export async function removeLiquidity(runContractFunction, contractAddress, liqu
 }
 
 export async function getAmountOut(runContractFunction, contractAddress,_tokenIn, amountIn){
-    try{
-        amountIn = utils.parseEther(amountIn).toString()
-        const amountOut = await poolCaller(runContractFunction, contractAddress,"getAmountOut", {_tokenIn, amountIn})
-        if(amountOut._hex.startsWith("0x00")) return 0
-        return utils.formatUnits(amountOut, "ether")
-    } catch(e){
-        // handleLoading(false)
-        error(e.error?.message || e.message)
-    }
+    amountIn = utils.parseEther(amountIn).toString()
+    const amountOut = await poolCaller(runContractFunction, contractAddress, "getAmountOut", {_tokenIn, amountIn})
+    if(amountOut._hex.startsWith("0x00")) return 0
+    return parseFloat(utils.formatUnits(amountOut, "ether")).toFixed(2).toString()
 }
 
 export async function getReserves(runContractFunction, contractAddress){

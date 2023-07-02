@@ -1,20 +1,14 @@
+import { useMoralis } from "react-moralis";
 import ERC20_ABI from "../constants/erc20Abi.json"
-import { utils } from "ethers";
-import { error } from "../utils/toastWrapper";
+import { utils, ethers } from "ethers";
 
 const poolFunctionParams = {
     abi: ERC20_ABI
 }
 
-function handleContractError(e){
-    // handleLoading(false)
-    error(e.error?.message || e.message)
-}
-
 function poolCaller(runContractFunction, contractAddress, functionName, params, ){
     return runContractFunction({
         params: {...poolFunctionParams, contractAddress, functionName, params},
-        onError: handleContractError
     })
 }
 
@@ -27,4 +21,13 @@ export async function getTokenData(runContractFunction, contractAddress, account
 
     balanceOf = utils.formatUnits(balanceOf.toString(), "ether")
     return {address: contractAddress ,name, symbol, balance: balanceOf}
+}
+
+export async function approveToken(tokenAddress, spenderAddress, amount){
+    const provider = new ethers.providers.Web3Provider(window.ethereum)
+    const signer = provider.getSigner();
+    
+    const tokenContract = new ethers.Contract(tokenAddress, ERC20_ABI, signer);
+    const tx = await tokenContract.approve(spenderAddress, utils.parseEther(amount))
+    await tx.wait(1)
 }
