@@ -2,7 +2,7 @@ import POOL_FACTORY_ABI from "../constants/poolFactoryAbi.json"
 import POOL_FACTORY_ADDRESSES from "../constants/poolFactoryAddresses.json"
 import {utils} from "ethers";
 
-const CHAIN_ID = 9709
+const CHAIN_ID = 31337
 
 const poolFactoryFunctionParams = {
     contractAddress: POOL_FACTORY_ADDRESSES[CHAIN_ID],

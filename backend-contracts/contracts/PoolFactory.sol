@@ -18,7 +18,7 @@ contract PoolFactory {
     event PoolCreated(
         address indexed token0,
         address indexed token1,
-        uint fee,
+        uint8 fee,
         address indexed poolAddress
     );
 

@@ -10,8 +10,9 @@ import { Toaster } from 'react-hot-toast';
 import { getAllPools } from "./hooks/poolFactory"
 import { getTokenData } from "./hooks/tokens"
 import { error } from './utils/toastWrapper';
+import { getFee } from './hooks/pool';
 
-const CHAIN_ID = 9709
+const CHAIN_ID = 31337
 
 function App() {
   const [poolAddresses, setPoolAddresses] = useState([])   // [[token0], [token1], [pooladdress]]
@@ -36,7 +37,15 @@ function App() {
   async function fetchPools(){
     try {
       const pools = await getAllPools(runContractFunction)
-      setPoolAddresses(pools)
+      const tempPools = []
+      for(let pool of pools){
+        const poolAddress = pool[2]
+        
+        const fee = await getFee(runContractFunction, poolAddress)
+        tempPools.push([pool[0], pool[1], poolAddress, fee])
+      }
+
+      setPoolAddresses(tempPools)
     } catch(e){
       error(e.error?.message || e.message)
     }
@@ -94,10 +103,10 @@ function App() {
         <Header />
         <Toaster />
         {isWeb3Enabled
-        ? parseInt(chainId) === CHAIN_ID
+        ? parseInt(chainId) === CHAIN_ID && poolAddresses.length
           ?(<Routes>
           <Route path="/" element={<Swap increaseSwapCount={increaseSwapCount} swapCount={swapCount} CHAIN_ID={CHAIN_ID} tokens={tokens} tokenAddresses={tokenAddresses} />}/>
-          <Route path="/pool" element={<Pool CHAIN_ID={CHAIN_ID} />}/> 
+          <Route path="/pool" element={<Pool CHAIN_ID={CHAIN_ID} poolAddresses={poolAddresses} tokenAddresses={tokenAddresses} tokens={tokens} />}/> 
           <Route path="*" element={<Swap increaseSwapCount={increaseSwapCount} swapCount={swapCount} CHAIN_ID={CHAIN_ID} tokens={tokens} tokenAddresses={tokenAddresses} />}/>
         </Routes>)
           : "Please switch to Sepolia Testnet"

@@ -18,7 +18,7 @@ contract Pool is LiquidityToken {
     uint256 private s_reserve0;
     uint256 private s_reserve1;
 
-    uint256 private immutable i_fee;
+    uint8 private immutable i_fee;
 
     event AddedLiquidity(
         uint256 indexed liquidityToken,
@@ -203,5 +203,9 @@ contract Pool is LiquidityToken {
 
     function getTokens() public view returns (address, address) {
         return (address(i_token0), address(i_token1));
+    }
+
+    function getFee() external view returns (uint8) {
+        return i_fee;
     }
 }

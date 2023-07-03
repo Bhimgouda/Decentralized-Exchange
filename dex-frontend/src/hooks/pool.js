@@ -55,6 +55,12 @@ export async function getReserves(runContractFunction, contractAddress){
     return {reserve0: reserves[0], reserve1: reserves[1]}
 }
 
-export async function getTokens(runContractFunction, contractAddress){
+export function getTokens(runContractFunction, contractAddress){
     return poolCaller(runContractFunction, contractAddress,"getTokens", {})
+}
+
+export async function getFee(runContractFunction, contractAddress){
+    let fee = await poolCaller(runContractFunction, contractAddress, "getFee", {})
+    fee = utils.formatUnits(fee.toString(), 2).toString()
+    return fee
 }
