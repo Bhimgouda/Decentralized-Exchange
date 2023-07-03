@@ -11,12 +11,23 @@ import { getAllPools } from "./hooks/poolFactory"
 import { getTokenData } from "./hooks/tokens"
 import { error } from './utils/toastWrapper';
 import { getFee } from './hooks/pool';
+import PoolModal from './components/PoolModal';
+import CreatePool from './pages/CreatePool';
 
 const CHAIN_ID = 31337
 
 function App() {
   const [poolAddresses, setPoolAddresses] = useState([])   // [[token0], [token1], [pooladdress]]
   const [tokenAddresses, setTokenAddresses] = useState([]) // addresses
+  const [modalOpen, setModalOpen] = useState(true);
+
+  const openModal = () => {
+      setModalOpen(true);
+  };
+
+  const closeModal = () => {
+      setModalOpen(false);
+  };
   
   const [tokens, setTokens] = useState({}) // Main object of tokens with pairs
 
@@ -102,11 +113,13 @@ function App() {
       <div className='app'>
         <Header />
         <Toaster />
+        <PoolModal modalOpen={modalOpen} closeModal={closeModal} />
         {isWeb3Enabled
         ? parseInt(chainId) === CHAIN_ID && poolAddresses.length
           ?(<Routes>
           <Route path="/" element={<Swap increaseSwapCount={increaseSwapCount} swapCount={swapCount} CHAIN_ID={CHAIN_ID} tokens={tokens} tokenAddresses={tokenAddresses} />}/>
-          <Route path="/pool" element={<Pool CHAIN_ID={CHAIN_ID} poolAddresses={poolAddresses} tokenAddresses={tokenAddresses} tokens={tokens} />}/> 
+          <Route path="/pool" element={<Pool openModal={openModal} modalOpen={modalOpen} closeModal={closeModal} CHAIN_ID={CHAIN_ID} poolAddresses={poolAddresses} tokenAddresses={tokenAddresses} tokens={tokens} />}/>
+          <Route path="/create-pool" element={<CreatePool />} />
           <Route path="*" element={<Swap increaseSwapCount={increaseSwapCount} swapCount={swapCount} CHAIN_ID={CHAIN_ID} tokens={tokens} tokenAddresses={tokenAddresses} />}/>
         </Routes>)
           : "Please switch to Sepolia Testnet"

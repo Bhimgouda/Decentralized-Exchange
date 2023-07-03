@@ -17,9 +17,8 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
         
         const poolFactory = await ethers.getContract("PoolFactory", deployer)
 
-        const pairs = [[solanaToken, usdcToken, fee], [maticToken, usdcToken, fee], [shibaInuToken, usdcToken, fee],
-        [cardanoToken, usdcToken, fee], [maticToken, solanaToken, fee],
-        [solanaToken, cardanoToken, fee], [shibaInuToken, maticToken, fee]]
+        const pairs = [[solanaToken, usdcToken, fee], [maticToken, usdcToken, fee], [shibaInuToken, usdcToken, fee],[cardanoToken, usdcToken, fee]]
+        // ,[maticToken, solanaToken, fee]], [solanaToken, cardanoToken, fee], [shibaInuToken, maticToken, fee]]
         
 
 

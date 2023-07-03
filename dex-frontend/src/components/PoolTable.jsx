@@ -1,4 +1,4 @@
-const PoolTable = ({pools}) => {
+const PoolTable = ({pools, handleAddLiquidity, handleRemoveLiquidity}) => {
 
     return ( 
         <div data-testid="test-table" className="custom-table">
@@ -17,10 +17,10 @@ const PoolTable = ({pools}) => {
                 <div className="custom-table-cell">--</div>
                 <div className="custom-table-cell">--</div>
                 <div className="custom-table-cell">
-                    <button data-testid="test-button" type="button">Add Liquidity</button>
+                    <button onClick={()=>handleAddLiquidity(pool)} data-testid="test-button" type="button">Add Liquidity</button>
                 </div>
                 <div className="custom-table-cell">
-                    <button data-testid="test-button" type="button">Remove Liquidity</button>
+                    <button onClick={()=>handleRemoveLiquidity(pool)} data-testid="test-button" type="button">Remove Liquidity</button>
                 </div>
                 </div>
             ))}

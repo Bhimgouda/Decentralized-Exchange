@@ -52,6 +52,26 @@ button {
 
 select {
   font-family: var(--font-satoshi-regular);
+  padding: 5px 10px;
+  border-radius: 10px;
+  border: none;
+  outline: none;
+}
+
+input {
+  border: none;
+  background: var(--color-primary);
+  outline: none;
+  font-size: 31px;
+}
+
+input::-webkit-inner-spin-button,
+input::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input {
+  -moz-appearance: textfield;
 }
 
 /* Utils */

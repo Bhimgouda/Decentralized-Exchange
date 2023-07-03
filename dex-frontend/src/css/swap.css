@@ -13,29 +13,6 @@
   display: flex;
 }
 
-.swap__token select {
-  padding: 5px 10px;
-  border-radius: 10px;
-  border: none;
-  outline: none;
-}
-
-.swap__token input {
-  border: none;
-  background: var(--color-primary);
-  outline: none;
-  font-size: 31px;
-}
-
-.swap__token input::-webkit-inner-spin-button,
-.swap__token input::-webkit-outer-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
-}
-.swap__token input {
-  -moz-appearance: textfield;
-}
-
 .swap__btn {
   padding: 18px 0;
   border-radius: 21px;
