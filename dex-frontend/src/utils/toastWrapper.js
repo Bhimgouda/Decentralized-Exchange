@@ -8,7 +8,8 @@ export const error = (message)=>{
 
 export const success = (message)=>{
     return toast.success(message, {
-        position: "top-left"
+        position: "top-left",
+        duration: "200"
     })
 }
 

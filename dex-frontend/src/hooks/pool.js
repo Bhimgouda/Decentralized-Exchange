@@ -30,17 +30,19 @@ export async function addLiquidity(runContractFunction, contractAddress, amount0
     const receipt = await tx.wait(1)
     console.log(receipt)
     const {liquidityToken} = receipt.events[3].args
-    return utils.formatUnits(liquidityToken, "ether")
+    return parseFloat(utils.formatUnits(liquidityToken, "ether")).toFixed().toString()
 }
 
 // come back later for liquidity tokens decimal
 export async function removeLiquidity(runContractFunction, contractAddress, liquidityTokens){
+    console.log(liquidityTokens)
     const tx = await poolCaller(runContractFunction, contractAddress,"removeLiquidity", {liquidityTokens})
     const receipt = await tx.wait(1)
-    let {token0, amount0, token1, amount1} = receipt.events[0].args
+    console.log(receipt)
+    let {amount0, amount1} = receipt.events[3].args
     amount0 = utils.formatUnits(amount0, "ether")
     amount1 = utils.formatUnits(amount1, "ether")
-    return {token0, amount0, token1, amount1}
+    return {amount0, amount1}
 }
 
 export async function getAmountOut(runContractFunction, contractAddress,_tokenIn, amountIn){
@@ -71,4 +73,9 @@ export async function getLiquidityRatio(runContractFunction, contractAddress, to
     let token1Amount = await poolCaller(runContractFunction, contractAddress, "getLiquidityRatio", {_tokenIn: tokenInAddress, amountIn})
     token1Amount = utils.formatUnits(token1Amount, 18).toString()
     return token1Amount
+}
+
+export async function getAmountsOnRemovingLiquidity(runContractFunction, contractAddress, liquidityTokens){
+    let amounts = await poolCaller(runContractFunction, contractAddress, "getAmountsOnRemovingLiquidity", {liquidityTokens})
+    return amounts.map(amount=>parseFloat(utils.formatUnits(amount, "ether")).toFixed(2).toString())
 }

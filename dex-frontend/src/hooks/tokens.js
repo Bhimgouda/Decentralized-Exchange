@@ -12,6 +12,9 @@ function poolCaller(runContractFunction, contractAddress, functionName, params, 
     })
 }
 
+const provider = new ethers.providers.Web3Provider(window.ethereum)
+const signer = provider.getSigner();
+
 // HOOKs
 
 export async function getTokenData(runContractFunction, contractAddress, account){
@@ -28,10 +31,14 @@ export async function getTokenData(runContractFunction, contractAddress, account
 }
 
 export async function approveToken(tokenAddress, spenderAddress, amount){
-    const provider = new ethers.providers.Web3Provider(window.ethereum)
-    const signer = provider.getSigner();
     
     const tokenContract = new ethers.Contract(tokenAddress, ERC20_ABI, signer);
     const tx = await tokenContract.approve(spenderAddress, utils.parseEther(amount))
     await tx.wait(1)
+}
+
+export async function getLiquidityTokens(runContractFunction, contractAddress, account){
+    const balance = (await poolCaller(runContractFunction, contractAddress, "balanceOf", {account})).toString()
+    if(!parseInt(balance)) return null;
+    return balance;
 }

@@ -137,21 +137,7 @@ contract Pool is LiquidityToken, ReentrancyGuard {
     }
 
     function removeLiquidity(uint256 liquidityTokens) external nonReentrant {
-        require(liquidityTokens > 0, "0 Liquidity Tokens");
-
-        // t = totalSupply of shares
-        // s = shares
-        // l = liquidity (reserve0 || reserve1)
-        // dl = liquidity to be removed (amount0 || amount1)
-
-        // The change in liquidity/token reserves should be propotional to shares burned
-        // t - s/t = l - dl/l
-        // dl = ls/t
-
-        uint256 tokenBalance = balanceOf(msg.sender);
-
-        uint256 amount0 = (s_reserve0 * tokenBalance) / totalSupply();
-        uint256 amount1 = (s_reserve1 * tokenBalance) / totalSupply();
+        (uint256 amount0, uint256 amount1) = getAmountsOnRemovingLiquidity(liquidityTokens);
 
         _burn(msg.sender, liquidityTokens);
         _updateLiquidity(s_reserve0 - amount0, s_reserve1 - amount1);
@@ -207,6 +193,30 @@ contract Pool is LiquidityToken, ReentrancyGuard {
         return (s_reserve0, s_reserve1);
     }
 
+    function getLiquidityRatio(address _tokenIn, uint256 amountIn) external view returns(uint256){
+        require(_tokenIn == address(i_token0) || _tokenIn == address(i_token1), "Invalid Token");
+        (uint256 resIn, uint256 resOut) = _tokenIn == address(i_token0) ? (s_reserve0, s_reserve1) : (s_reserve1, s_reserve0);
+        return (resOut*amountIn)/resIn;
+    }
+
+    function getAmountsOnRemovingLiquidity(uint256 liquidityTokens) public view returns(uint256 amount0, uint256 amount1){
+        require(liquidityTokens > 0, "0 Liquidity Tokens");
+
+        // t = totalSupply of shares
+        // s = shares
+        // l = liquidity (reserve0 || reserve1)
+        // dl = liquidity to be removed (amount0 || amount1)
+
+        // The change in liquidity/token reserves should be propotional to shares burned
+        // t - s/t = l - dl/l
+        // dl = ls/t
+
+        // uint256 tokenBalance = balanceOf(msg.sender);
+
+        amount0 = (s_reserve0 * liquidityTokens) / totalSupply();
+        amount1 = (s_reserve1 * liquidityTokens) / totalSupply();
+    }
+
     function getTokens() public view returns (address, address) {
         return (address(i_token0), address(i_token1));
     }
@@ -215,11 +225,4 @@ contract Pool is LiquidityToken, ReentrancyGuard {
         return i_fee;
     }
 
-    function getLiquidityRatio(address _tokenIn, uint256 amountIn) external view returns(uint256){
-        require(_tokenIn == address(i_token0) || _tokenIn == address(i_token1), "Invalid Token");
-
-        (uint256 resIn, uint256 resOut) = _tokenIn == address(i_token0) ? (s_reserve0, s_reserve1) : (s_reserve1, s_reserve0);
-
-        return (resOut*amountIn)/resIn;
-    }
 }

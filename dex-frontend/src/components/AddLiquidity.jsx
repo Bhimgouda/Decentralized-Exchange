@@ -39,7 +39,7 @@ export const AddLiquidity = ({modalOpen, handleModalClose, pool, handleLoading})
     e.preventDefault()
 
     if(parseInt(amount0) && parseInt(amount1)){
-      if(parseInt(amount0) < parseInt(token0.balance) && parseInt(amount1) < parseInt(token1.balance)){
+      if(parseInt(amount0) <= parseInt(token0.balance) && parseInt(amount1) <= parseInt(token1.balance)){
         try{
           handleLoading(true)
           await approveToken(token0.address, pool.address, amount0)
@@ -49,6 +49,7 @@ export const AddLiquidity = ({modalOpen, handleModalClose, pool, handleLoading})
           handleModalClose(true)
           handleLoading(false)
         } catch(e){
+          handleLoading(false)
           console.log(e)
         }
       } else error("You have Invalid Token balance")
