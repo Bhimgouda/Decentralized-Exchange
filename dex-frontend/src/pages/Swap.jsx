@@ -4,7 +4,7 @@ import { useMoralis, useWeb3Contract } from "react-moralis"
 import { approveToken } from "../hooks/tokens"
 import GetTokensBtn from "../components/GetTokensBtn"
 import { getAmountOut, swap } from "../hooks/pool"
-import { error, success } from "../utils/toastWrapper"
+import { error, info, success } from "../utils/toastWrapper"
 
 const Swap = ({tokenAddresses, tokens, handleLoading, refreshUi, refreshCount}) => {
     // Initial Data
@@ -89,7 +89,10 @@ const Swap = ({tokenAddresses, tokens, handleLoading, refreshUi, refreshCount}) 
 
             handleLoading(true)
             setSwapStatus({display: "Swapping", disabled: true})
+
+            info("Approving Tokens for Swap")
             await approveToken(token0.address, currentPoolAddress, amount0)
+
             const amountOut = await swap(runContractFunction, currentPoolAddress, token0.address, amount0)
             success(`Swapped ${amount0} ${token0.name} for ${amountOut} ${token1.name}`)
             refreshUi()

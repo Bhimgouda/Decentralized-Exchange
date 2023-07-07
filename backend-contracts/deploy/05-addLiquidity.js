@@ -32,7 +32,7 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
         // ,[maticToken, solanaToken, maticSol], [solanaToken, cardanoToken, solAda], [shibaInuToken, maticToken, shibMatic]]
 
         const amount0 = ethers.utils.parseUnits("100000", 18).toString();
-        const amount1 = ethers.utils.parseUnits("200000", 18).toString();
+        const amount1 = ethers.utils.parseUnits("67000", 18).toString();
 
         for(let pool of pools){
             const spenderAddress = pool[2].address

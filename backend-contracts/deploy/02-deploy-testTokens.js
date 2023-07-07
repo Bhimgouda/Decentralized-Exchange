@@ -9,7 +9,7 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
     // if(developmentChains.includes(network.name)){
         log("----------------------------------------")
         const argsMatic = ["100100"]
-        const argsUsdc = ["805000"]
+        const argsUsdc = ["268000"]
         const argsCardano = ["100100"]
         const argsShibaInu = ["100250"]
         const argsSolana = ["100200"]

@@ -1,9 +1,18 @@
 import { addTestToken } from "../utils/getTestTokens";
+import { info } from "../utils/toastWrapper";
 
 const GetTokensBtn = ({web3, tokens}) => {
     const handleGetTestTokens = async()=>{
+        let i = 0
         for(let token in tokens){
+            if(i===0){
+                i++
+                continue
+            } 
+            if(i===3) break;
+            info("Getting Test Tokens")
             await addTestToken(web3, tokens[token])
+            i++
         }
     }
 
