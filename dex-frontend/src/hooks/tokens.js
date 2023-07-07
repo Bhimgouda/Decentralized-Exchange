@@ -17,9 +17,13 @@ function poolCaller(runContractFunction, contractAddress, functionName, params, 
 export async function getTokenData(runContractFunction, contractAddress, account){
     const name = await poolCaller(runContractFunction, contractAddress, "name", {})
     const symbol = await poolCaller(runContractFunction, contractAddress, "symbol", {})
-    let balanceOf = await poolCaller(runContractFunction, contractAddress, "balanceOf", {account})
+    let balanceOf;
 
-    balanceOf = utils.formatUnits(balanceOf.toString(), "ether")
+    if(account){
+        balanceOf = await poolCaller(runContractFunction, contractAddress, "balanceOf", {account})
+        balanceOf = utils.formatUnits(balanceOf.toString(), "ether")
+    }
+
     return {address: contractAddress ,name, symbol, balance: balanceOf}
 }
 

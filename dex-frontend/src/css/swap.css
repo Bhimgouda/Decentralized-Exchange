@@ -1,18 +1,3 @@
-.swap {
-  background: white;
-  border-radius: 21px;
-  padding: 5px;
-  position: relative;
-}
-
-.swap__token {
-  background: var(--color-primary);
-  padding: 20px 15px;
-  border-radius: 10px;
-  margin-bottom: 2.5px;
-  display: flex;
-}
-
 .swap__btn {
   padding: 18px 0;
   border-radius: 21px;

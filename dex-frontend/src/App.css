@@ -34,6 +34,31 @@
   /*  (black with 75% opacity for lightbox background) */
 }
 
+/* Scrollbar styles */
+
+/* Works on Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-grey) var(--color-primary-dark);
+}
+
+/* Works on Chrome, Edge, and Safari */
+*::-webkit-scrollbar {
+  width: 10px;
+}
+
+*::-webkit-scrollbar-track {
+  background: var(--color-primary-dark);
+  border-radius: 20px;
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: var(--color-primary);
+  border-radius: 20px;
+  /* border: 3px solid ; */
+}
+
+
 img {
   width: 100%;
 }
@@ -97,6 +122,7 @@ input {
   color: var(--color-primary-dark);
 }
 
+
 /* App */
 
 .app {
@@ -120,4 +146,52 @@ input {
   justify-content: space-between;
   align-items: center;
   width: 100%;
+}
+
+/* Form Inputs */
+
+.input-area {
+  background: white;
+  border-radius: 21px;
+  padding: 5px;
+  position: relative;
+}
+
+.input-area__box {
+  background: var(--color-primary);
+  padding: 20px 15px;
+  border-radius: 10px;
+  margin-bottom: 2.5px;
+  display: flex;
+}
+
+.token-name{
+  padding: 5px 10px;
+  border-radius: 5px;
+  color: white;
+  height: 32px;
+  background: var(--color-primary-dark)
+}
+
+.amount-display{
+  padding: 5px;
+  margin: 5px;
+  font-size: 25px;
+}
+
+.info{
+  padding: 10px;
+  margin-top: 40px;
+}
+
+/* Loading Overlay */
+.app__overlay{
+  position: absolute;
+  background: rgba(0,0,0, 0.8);
+  width: 100vw;
+  height: 100vh;
+  z-index: 10;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }

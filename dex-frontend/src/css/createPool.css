@@ -1,0 +1,20 @@
+.create-pool .input-area__box{
+    width: 600px;
+}
+
+.create-pool .input-area__box input{
+    width: 100%;
+    font-size: 16px
+}
+
+.create-pool .input-area__select{
+    font-size: 18px;
+}
+
+.create-pool select{
+    padding: 10px 15px;
+    background: black;
+    color: white;
+    margin: 10px;
+    font-size: 16px;
+}

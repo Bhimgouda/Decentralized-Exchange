@@ -1,7 +1,6 @@
 import { Route, Routes } from 'react-router-dom/dist/umd/react-router-dom.development';
 import './App.css';
-import Swap from './components/Swap';
-import Pool from './components/Pool';
+import Swap from './pages/Swap';
 import Header from './components/Header';
 import { useMoralis, useWeb3Contract } from 'react-moralis';
 import handleNetworkSwitch from './utils/networkSwitcher';
@@ -10,28 +9,22 @@ import { Toaster } from 'react-hot-toast';
 import { getAllPools } from "./hooks/poolFactory"
 import { getTokenData } from "./hooks/tokens"
 import { error } from './utils/toastWrapper';
-import { getFee } from './hooks/pool';
-import PoolModal from './components/PoolModal';
+import { getFee, getReserves } from './hooks/pool';
 import CreatePool from './pages/CreatePool';
+import LoadingOverlay from './components/LoadingOverlay';
+import Pools from './pages/Pools';
 
 const CHAIN_ID = 31337
 
 function App() {
   const [poolAddresses, setPoolAddresses] = useState([])   // [[token0], [token1], [pooladdress]]
   const [tokenAddresses, setTokenAddresses] = useState([]) // addresses
-  const [modalOpen, setModalOpen] = useState(true);
-
-  const openModal = () => {
-      setModalOpen(true);
-  };
-
-  const closeModal = () => {
-      setModalOpen(false);
-  };
   
   const [tokens, setTokens] = useState({}) // Main object of tokens with pairs
 
-  const [swapCount, setSwapCount] = useState(0);
+  // For fetching and rendering data after on-chain activity
+  const [refreshCount, setRefreshCount] = useState(0)
+  const [loading, setLoading] = useState(false);
   
   const {isWeb3Enabled, web3, chainId, account} = useMoralis()
   const {runContractFunction} = useWeb3Contract()
@@ -40,10 +33,15 @@ function App() {
   }, [isWeb3Enabled, chainId])
 
 
+  const handleLoading = (value)=>{
+      setLoading(value)
+  }
+
   useEffect(()=>{
     if(!isWeb3Enabled || parseInt(chainId) !== CHAIN_ID) return
+    setLoading(true)
     fetchPools()
-  }, [isWeb3Enabled, chainId])
+  }, [isWeb3Enabled, chainId, refreshCount])
 
   async function fetchPools(){
     try {
@@ -53,7 +51,8 @@ function App() {
         const poolAddress = pool[2]
         
         const fee = await getFee(runContractFunction, poolAddress)
-        tempPools.push([pool[0], pool[1], poolAddress, fee])
+        const reserves = await getReserves(runContractFunction, poolAddress)
+        tempPools.push([pool[0], pool[1], poolAddress, fee, reserves])
       }
 
       setPoolAddresses(tempPools)
@@ -88,7 +87,7 @@ function App() {
     if(!tokenAddresses.length) return
       
     gettingTokenData()
-  },[tokenAddresses, account, swapCount])
+  },[tokenAddresses, account])
 
   async function gettingTokenData(){
     const tempTokens = {}
@@ -102,10 +101,11 @@ function App() {
         tempTokens[pool[1]].pairs[pool[0]] = pool[2]
     })
     setTokens(tempTokens)
+    setLoading(false)
   }
 
-  const increaseSwapCount = ()=>{
-    setSwapCount(swapCount+1);
+  const refreshUi =()=>{
+    setRefreshCount(refreshCount+1)
   }
 
 
@@ -113,17 +113,17 @@ function App() {
       <div className='app'>
         <Header />
         <Toaster />
-        <PoolModal modalOpen={modalOpen} closeModal={closeModal} />
         {isWeb3Enabled
-        ? parseInt(chainId) === CHAIN_ID && poolAddresses.length
+        ? parseInt(chainId) === CHAIN_ID
           ?(<Routes>
-          <Route path="/" element={<Swap increaseSwapCount={increaseSwapCount} swapCount={swapCount} CHAIN_ID={CHAIN_ID} tokens={tokens} tokenAddresses={tokenAddresses} />}/>
-          <Route path="/pool" element={<Pool openModal={openModal} modalOpen={modalOpen} closeModal={closeModal} CHAIN_ID={CHAIN_ID} poolAddresses={poolAddresses} tokenAddresses={tokenAddresses} tokens={tokens} />}/>
-          <Route path="/create-pool" element={<CreatePool />} />
-          <Route path="*" element={<Swap increaseSwapCount={increaseSwapCount} swapCount={swapCount} CHAIN_ID={CHAIN_ID} tokens={tokens} tokenAddresses={tokenAddresses} />}/>
+          <Route path="/" element={<Swap handleLoading={handleLoading} refreshCount={refreshCount} refreshUi={refreshUi} CHAIN_ID={CHAIN_ID} tokens={tokens} tokenAddresses={tokenAddresses} />}/>
+          <Route path="/pool" element={<Pools handleLoading={handleLoading} refreshUi={refreshUi} CHAIN_ID={CHAIN_ID} poolAddresses={poolAddresses} tokenAddresses={tokenAddresses} tokens={tokens} />}/>
+          <Route path="/create-pool" element={<CreatePool refreshUi={refreshUi} handleLoading={handleLoading}/>} />
+          <Route path="*" element={<Swap handleLoading={handleLoading} refreshCount={refreshCount} refreshUi={refreshUi} CHAIN_ID={CHAIN_ID} tokens={tokens} tokenAddresses={tokenAddresses} />}/>
         </Routes>)
           : "Please switch to Sepolia Testnet"
         : "Please Connect your Wallet"}
+        <LoadingOverlay loading={loading} />
       </div>
   );
 }

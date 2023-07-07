@@ -15,7 +15,8 @@ module.exports = async ({getNamedAccounts, deployments}) => {
         from: deployer,
         args,
         log: true,
-        waitConfirmations: 1
+        waitConfirmations: 1,
+        gasPrice: 5000000000,
     });
 
     if(!developmentChains.includes(network.name)){

@@ -1,0 +1,18 @@
+pools page
+
+loading overlay
+
+input loading component and testnet testing
+
+server to send free test tokens
+
+move pools and swap page from component to pages area
+
+Not rendering all pools data at app.js - optimization
+
+Not getting all pools data when loading changes
+
+SC gasprice change
+
+in FE increase gasPrice for faster txns
+

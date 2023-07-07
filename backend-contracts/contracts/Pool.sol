@@ -3,13 +3,14 @@ pragma solidity ^0.8.7;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "./LiquidityToken.sol";
 
 error Pool__InvalidTokenRatio();
 error Pool__ZeroLiquidityToken();
 error Pool__InvalidToken();
 
-contract Pool is LiquidityToken {
+contract Pool is LiquidityToken, ReentrancyGuard {
     using SafeMath for uint256;
 
     IERC20 private immutable i_token0;
@@ -56,7 +57,7 @@ contract Pool is LiquidityToken {
         s_reserve1 = reserve1;
     }
 
-    function swap(address _tokenIn, uint256 amountIn) external {
+    function swap(address _tokenIn, uint256 amountIn) external nonReentrant {
         // Objective: To Find amount of Token Out
 
         require(
@@ -75,7 +76,8 @@ contract Pool is LiquidityToken {
                 ? (i_token0, i_token1, s_reserve0, s_reserve1)
                 : (i_token1, i_token0, s_reserve1, s_reserve0);
 
-        tokenIn.transferFrom(msg.sender, address(this), amountIn);
+        bool success = tokenIn.transferFrom(msg.sender, address(this), amountIn);
+        require(success, "Swap Failed");
 
         // xy = k
         // (x + dx)(y - dy) = k
@@ -96,7 +98,7 @@ contract Pool is LiquidityToken {
         emit Swapped(address(tokenIn), amountIn, address(tokenOut), amountOut);
     }
 
-    function addLiquidity(uint256 amount0, uint256 amount1) external {
+    function addLiquidity(uint256 amount0, uint256 amount1) external nonReentrant {
         // x/y = dx/dy
         if (s_reserve0 > 0 || s_reserve1 > 0) {
             if (s_reserve0 / s_reserve1 != amount0 / amount1)
@@ -134,7 +136,7 @@ contract Pool is LiquidityToken {
         );
     }
 
-    function removeLiquidity(uint256 liquidityTokens) external {
+    function removeLiquidity(uint256 liquidityTokens) external nonReentrant {
         require(liquidityTokens > 0, "0 Liquidity Tokens");
 
         // t = totalSupply of shares
@@ -179,6 +181,10 @@ contract Pool is LiquidityToken {
         }
     }
 
+    ///////////////////////////////
+    //// View Functions //////////
+    /////////////////////////////
+
     function getAmountOut(
         address _tokenIn,
         uint256 amountIn
@@ -207,5 +213,13 @@ contract Pool is LiquidityToken {
 
     function getFee() external view returns (uint8) {
         return i_fee;
+    }
+
+    function getLiquidityRatio(address _tokenIn, uint256 amountIn) external view returns(uint256){
+        require(_tokenIn == address(i_token0) || _tokenIn == address(i_token1), "Invalid Token");
+
+        (uint256 resIn, uint256 resOut) = _tokenIn == address(i_token0) ? (s_reserve0, s_reserve1) : (s_reserve1, s_reserve0);
+
+        return (resOut*amountIn)/resIn;
     }
 }

@@ -5,7 +5,7 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
     const { deploy, log } = deployments
     const { deployer } = await getNamedAccounts()
 
-    if(developmentChains.includes(network.name)){
+    // if(developmentChains.includes(network.name)){
 
         const fee = ethers.utils.parseUnits("0.5", 2).toString();
 
@@ -44,7 +44,7 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
             await tx3.wait()
         }
         
-    }
+    // }
 }
 
 module.exports.tags = ["all", "addLiquidity"]

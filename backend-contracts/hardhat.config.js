@@ -43,7 +43,7 @@ module.exports = {
       accounts: PRIVATE_KEY ? [PRIVATE_KEY] : [],
       saveDeployments: true,
       chainId: 11155111,
-      blockConfirmations: 5
+      blockConfirmations: 5,
     },
     mainnet:{
       url: MAINNET_RPC_URL,

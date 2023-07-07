@@ -5,7 +5,7 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
     const { deploy, log } = deployments
     const { deployer } = await getNamedAccounts()
 
-    if(developmentChains.includes(network.name)){
+    // if(developmentChains.includes(network.name)){
 
         const fee = ethers.utils.parseUnits("0.5", 2).toString();
 
@@ -26,8 +26,6 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
             const tx = await poolFactory.createPool(...pair);
             await tx.wait(1)
         }
-
-    }
 }
 
 module.exports.tags = ["all", "testPools"]
