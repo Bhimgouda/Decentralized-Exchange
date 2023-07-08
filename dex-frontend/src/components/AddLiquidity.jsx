@@ -48,8 +48,8 @@ export const AddLiquidity = ({modalOpen, handleModalClose, pool, handleLoading, 
           const liquidityTokens = await addLiquidity(runContractFunction, pool.address, amount0, amount1)
           success(`You have got ${liquidityTokens} Liquidity Tokens`);
           handleModalClose(true)
-          refreshUi()
           handleLoading(false)
+          refreshUi()
           
         } catch(e){
           handleLoading(false)

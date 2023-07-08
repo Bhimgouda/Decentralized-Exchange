@@ -6,7 +6,7 @@ import GetTokensBtn from "../components/GetTokensBtn"
 import { getAmountOut, swap } from "../hooks/pool"
 import { error, info, success } from "../utils/toastWrapper"
 
-const Swap = ({tokenAddresses, tokens, handleLoading, refreshUi, refreshCount}) => {
+const Swap = ({tokenAddresses, tokens, handleLoading, refreshUi, refreshCount, handleBalanceUpdate}) => {
     // Initial Data
     const [currentPoolAddress, setCurrentPoolAddress] = useState("")        // address
 
@@ -27,8 +27,16 @@ const Swap = ({tokenAddresses, tokens, handleLoading, refreshUi, refreshCount}) 
         const t0Pairs = Object.keys(t0.pairs)
         
         setToken0(t0)
-        setToken1(tokens[t0Pairs])
+        setToken1(tokens[t0Pairs[0]])
     }, [tokens])
+
+
+    useEffect(()=>{
+        if(token0.address){
+            const t0Pairs = Object.keys(token0.pairs)
+            setToken1(tokens[t0Pairs[0]])
+        }
+    }, [token0])
 
     useEffect(()=>{
         refreshUiAfterSwap()
@@ -41,9 +49,9 @@ const Swap = ({tokenAddresses, tokens, handleLoading, refreshUi, refreshCount}) 
     }
 
     useEffect(()=>{
-        if(!token0.address || !token1.address) return
-
+        if(token0?.address && token1?.address){ 
         setCurrentPoolAddress(token0.pairs[token1.address])
+        }
     }, [token0, token1])
 
     useEffect(()=>{
@@ -114,8 +122,8 @@ const Swap = ({tokenAddresses, tokens, handleLoading, refreshUi, refreshCount}) 
 
             const amountOut = await swap(runContractFunction, currentPoolAddress, token0.address, amount0)
             success(`Swapped ${amount0} ${token0.name} for ${amountOut} ${token1.name}`)
-            refreshUi()
             handleLoading(false)
+            refreshUi()
             
         } catch(e){
             handleLoading(false)
@@ -125,9 +133,9 @@ const Swap = ({tokenAddresses, tokens, handleLoading, refreshUi, refreshCount}) 
         }
     }
 
-    return token0?.address ? 
+    return token0?.address && token1?.address ? 
         (<div className="input-area">
-        <GetTokensBtn tokens={tokens} handleLoading={handleLoading} web3={web3} />
+        <GetTokensBtn handleBalanceUpdate={handleBalanceUpdate} tokens={tokens} handleLoading={handleLoading} web3={web3} />
              <h2>Swap with EASE</h2>
              <form onSubmit={handleSwap}>
                  <div className="input-area__box">

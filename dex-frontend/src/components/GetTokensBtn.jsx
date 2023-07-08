@@ -2,14 +2,14 @@ import { useMoralis } from "react-moralis";
 import { addTestToken, transferTestToken } from "../utils/getTestTokens";
 import { error, info } from "../utils/toastWrapper";
 
-const GetTokensBtn = ({web3, tokens, handleLoading}) => {
+const GetTokensBtn = ({web3, tokens, handleLoading, handleBalanceUpdate}) => {
 
     const {account} = useMoralis()
 
     const handleGetTestTokens = async()=>{
         try{
-            handleLoading(true)
             info("Transfering Test Tokens")
+            handleLoading(true)
             const transferSuccess = await transferTestToken(tokens, account)
             if(!transferSuccess) return error("Something went wrong")
     
@@ -22,9 +22,11 @@ const GetTokensBtn = ({web3, tokens, handleLoading}) => {
                 i++
             }
             handleLoading(false)
+            
         } catch(e){
             handleLoading(false)
         }
+        handleBalanceUpdate()
     }
 
     return ( 

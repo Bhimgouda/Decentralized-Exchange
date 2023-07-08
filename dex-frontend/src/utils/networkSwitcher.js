@@ -1,4 +1,4 @@
-import { success, error } from "./toastWrapper";
+import { success, error, info } from "./toastWrapper";
 
 const handleNetworkSwitch = async (isWeb3Enabled, chainId, web3, CHAIN_ID) => {
     // Enable Web3 if not already enabled
@@ -8,7 +8,7 @@ const handleNetworkSwitch = async (isWeb3Enabled, chainId, web3, CHAIN_ID) => {
 
     // Check if the current network is already Sepolia
     if (parseInt(chainId) === CHAIN_ID) {
-      success("You're wallet is connected to Sepolia network")
+      info("You're wallet is connected to Sepolia network")
       return;
     }
 
@@ -18,7 +18,7 @@ const handleNetworkSwitch = async (isWeb3Enabled, chainId, web3, CHAIN_ID) => {
       try {
         await web3.provider.request({
           method: "wallet_switchEthereumChain",
-          params: [{ chainId: "0xaa36a7" }],                 // changes on production
+          params: [{ chainId: "0xaa36a7" }],                 
         });
       } catch (e) {
         if (e.code === 4902) {

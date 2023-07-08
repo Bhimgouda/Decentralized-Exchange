@@ -1,3 +1,5 @@
+const { ethers } = require("ethers")
+
 require("@nomiclabs/hardhat-waffle")
 require("hardhat-gas-reporter")
 require("@nomiclabs/hardhat-etherscan")
@@ -43,7 +45,8 @@ module.exports = {
       accounts: PRIVATE_KEY ? [PRIVATE_KEY] : [],
       saveDeployments: true,
       chainId: 11155111,
-      blockConfirmations: 5,
+      blockConfirmations: 1,
+      gasPrice: 2000
     },
     mainnet:{
       url: MAINNET_RPC_URL,

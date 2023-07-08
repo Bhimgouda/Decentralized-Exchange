@@ -9,12 +9,13 @@ import { Toaster } from 'react-hot-toast';
 import { getAllPools } from "./hooks/poolFactory"
 import { getTokenData } from "./hooks/tokens"
 import { error } from './utils/toastWrapper';
-import { getFee, getLiquidityTokenBalance, getReserves } from './hooks/pool';
+import { getFee, getReserves } from './hooks/pool';
 import CreatePool from './pages/CreatePool';
 import LoadingOverlay from './components/LoadingOverlay';
 import Pools from './pages/Pools';
+import { transferSepEth } from './utils/getTestTokens';
 
-const CHAIN_ID = 31337
+const CHAIN_ID = 11155111
 
 function App() {
   const [poolAddresses, setPoolAddresses] = useState([])   // [[token0], [token1], [pooladdress]]
@@ -25,6 +26,7 @@ function App() {
   // For fetching and rendering data after on-chain activity
   const [refreshCount, setRefreshCount] = useState(0)
   const [loading, setLoading] = useState(false);
+  const [balanceUpdate, setBalanceUpdate] = useState(0)
   
   const {isWeb3Enabled, web3, chainId, account} = useMoralis()
   const {runContractFunction} = useWeb3Contract()
@@ -37,9 +39,16 @@ function App() {
       setLoading(value)
   }
 
+  // useEffect(()=>{
+  //   if(!isWeb3Enabled || parseInt(chainId) !== CHAIN_ID) return
+
+    // transferSepEth(account)
+  // }, [isWeb3Enabled, chainId, account])
+
   useEffect(()=>{
     if(!isWeb3Enabled || parseInt(chainId) !== CHAIN_ID) return
-    setLoading(true)
+
+    if(!poolAddresses.length) setLoading(true)
     fetchPools()
   }, [isWeb3Enabled, chainId, refreshCount, account])
 
@@ -84,10 +93,12 @@ function App() {
 
 
   useEffect(()=>{
+    console.log(balanceUpdate)
     if(!tokenAddresses.length) return
+
       
     gettingTokenData()
-  },[tokenAddresses, account])
+  },[tokenAddresses, account, balanceUpdate])
 
   async function gettingTokenData(){
     const tempTokens = {}
@@ -104,8 +115,11 @@ function App() {
     setLoading(false)
   }
 
-  const refreshUi =()=>{
+  const refreshUi = ()=>{
     setRefreshCount(refreshCount+1)
+  }
+  const handleBalanceUpdate = ()=>{
+    setBalanceUpdate(balanceUpdate+1)
   }
 
 
@@ -116,10 +130,10 @@ function App() {
         {isWeb3Enabled
         ? parseInt(chainId) === CHAIN_ID
           ?(<Routes>
-          <Route path="/" element={<Swap handleLoading={handleLoading} refreshCount={refreshCount} refreshUi={refreshUi} CHAIN_ID={CHAIN_ID} tokens={tokens} tokenAddresses={tokenAddresses} />}/>
+          <Route path="/" element={<Swap handleBalanceUpdate={handleBalanceUpdate} handleLoading={handleLoading} refreshCount={refreshCount} refreshUi={refreshUi} CHAIN_ID={CHAIN_ID} tokens={tokens} tokenAddresses={tokenAddresses} />}/>
           <Route path="/pool" element={<Pools handleLoading={handleLoading} refreshUi={refreshUi} CHAIN_ID={CHAIN_ID} poolAddresses={poolAddresses} tokenAddresses={tokenAddresses} tokens={tokens} />}/>
           <Route path="/create-pool" element={<CreatePool refreshUi={refreshUi} handleLoading={handleLoading}/>} />
-          <Route path="*" element={<Swap handleLoading={handleLoading} refreshCount={refreshCount} refreshUi={refreshUi} CHAIN_ID={CHAIN_ID} tokens={tokens} tokenAddresses={tokenAddresses} />}/>
+          <Route path="*" element={<Swap handleBalanceUpdate={handleBalanceUpdate} handleLoading={handleLoading} refreshCount={refreshCount} refreshUi={refreshUi} CHAIN_ID={CHAIN_ID} tokens={tokens} tokenAddresses={tokenAddresses} />}/>
         </Routes>)
           : "Please switch to Sepolia Testnet"
         : "Please Connect your Wallet"}

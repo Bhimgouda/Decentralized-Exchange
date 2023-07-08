@@ -41,8 +41,8 @@ export async function removeLiquidity(runContractFunction, contractAddress, liqu
     const receipt = await tx.wait(1)
     const event = receipt.events.find(event=>event.event === "RemovedLiquidity")
     let {amount0, amount1} = event.args
-    amount0 = utils.formatUnits(amount0, "ether")
-    amount1 = utils.formatUnits(amount1, "ether")
+    amount0 = parseFloat(utils.formatUnits(amount0, "ether")).toFixed(2).toString()
+    amount1 = parseFloat(utils.formatUnits(amount1, "ether")).toFixed(2).toString()
     return {amount0, amount1}
 }
 

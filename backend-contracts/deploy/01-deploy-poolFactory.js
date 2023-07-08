@@ -10,13 +10,13 @@ module.exports = async ({getNamedAccounts, deployments}) => {
     const {name: networkName} = network;
 
     const args = []
+    const waitConfirmations = networkName === "hardhat" ? 0 : 2
 
     const poolFactory = await deploy("PoolFactory",{
         from: deployer,
         args,
         log: true,
-        waitConfirmations: 1,
-        gasPrice: 5000000000,
+        waitConfirmations,
     });
 
     if(!developmentChains.includes(network.name)){

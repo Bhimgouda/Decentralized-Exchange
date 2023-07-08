@@ -63,7 +63,7 @@ const PoolTable = ({ pools, handleLoading, refreshUi }) => {
             <div className="custom-table-cell">{pool.fee}</div>
             <div className="custom-table-cell">{`${pool.reserve0} ${pool.token0.symbol}`}</div>
             <div className="custom-table-cell">{`${pool.reserve1} ${pool.token1.symbol}`}</div>
-            <div className="custom-table-cell">{`${liquidityTokenBalances[index]}`}</div>
+            <div className="custom-table-cell">{`${liquidityTokenBalances[index] || "getting..."}`}</div>
             <div className="custom-table-cell">
               <button
                 className="btn"

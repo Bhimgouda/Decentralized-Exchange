@@ -64,8 +64,8 @@ const CreatePool = ({refreshUi, refreshCount, handleLoading}) => {
             handleLoading(true)
             const poolAddress = await createPool(token0Address, token1Address, fee, runContractFunction)
             success(`Created a Pool with address - ${poolAddress}`)
-            refreshUi()
             handleLoading(false)
+            refreshUi()
 
         } catch(e){
             console.log(e)

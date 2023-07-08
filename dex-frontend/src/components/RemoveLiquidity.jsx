@@ -65,8 +65,8 @@ export const RemoveLiquidity = ({modalOpen, handleModalClose, pool, handleLoadin
           const {amount0, amount1} = await removeLiquidity(runContractFunction, pool.address, liquidityPercentage)
           success(`Burnt ${selectedPercentage}% of Your Liquidity tokens for ${amount0} ${token0.name} ${amount1} ${token1.name}`)
           handleModalClose(true)
-          refreshUi()
           handleLoading(false)
+          refreshUi()
 
         }
       } catch(e){
