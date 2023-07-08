@@ -138,6 +138,7 @@ function App() {
           : "Please switch to Sepolia Testnet"
         : "Please Connect your Wallet"}
         <LoadingOverlay loading={loading} />
+        <p style={{position: 'absolute', bottom: "20px"}}>Made with ❤️ by <a target="_blank" href='https://github.com/Bhimgouda'>Bhimgouda Patil</a></p>
       </div>
   );
 }
