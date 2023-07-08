@@ -1,6 +1,7 @@
 const { network, ethers } = require("hardhat")
 const { developmentChains } = require("../helper-hardhat.config")
 const { utils } = require("ethers")
+const { parseEther } = require("ethers/lib/utils")
 
 module.exports = async ({ getNamedAccounts, deployments }) => {
     const { deploy, log } = deployments
@@ -8,11 +9,11 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
 
     // if(developmentChains.includes(network.name)){
         log("----------------------------------------")
-        const argsMatic = ["100100"]
-        const argsUsdc = ["268000"]
-        const argsCardano = ["100100"]
-        const argsShibaInu = ["100250"]
-        const argsSolana = ["100200"]
+        const argsMatic = [parseEther("101100")]
+        const argsUsdc = [parseEther("269000")]
+        const argsCardano = [parseEther("101100")]
+        const argsShibaInu = [parseEther("101250")]
+        const argsSolana = [parseEther("101200")]
 
         await deploy("MaticToken", {
             from: deployer,

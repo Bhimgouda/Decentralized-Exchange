@@ -1,18 +1,29 @@
-import { addTestToken } from "../utils/getTestTokens";
-import { info } from "../utils/toastWrapper";
+import { useMoralis } from "react-moralis";
+import { addTestToken, transferTestToken } from "../utils/getTestTokens";
+import { error, info } from "../utils/toastWrapper";
 
-const GetTokensBtn = ({web3, tokens}) => {
+const GetTokensBtn = ({web3, tokens, handleLoading}) => {
+
+    const {account} = useMoralis()
+
     const handleGetTestTokens = async()=>{
-        let i = 0
-        for(let token in tokens){
-            if(i===0){
+        try{
+            handleLoading(true)
+            info("Transfering Test Tokens")
+            const transferSuccess = await transferTestToken(tokens, account)
+            if(!transferSuccess) return error("Something went wrong")
+    
+     
+            let i = 0
+            info("Please Approve Adding Test Tokens")
+            for(let token in tokens){
+                if(i===4) break
+                await addTestToken(web3, tokens[token])
                 i++
-                continue
-            } 
-            if(i===3) break;
-            info("Getting Test Tokens")
-            await addTestToken(web3, tokens[token])
-            i++
+            }
+            handleLoading(false)
+        } catch(e){
+            handleLoading(false)
         }
     }
 

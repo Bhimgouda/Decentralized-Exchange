@@ -1,12 +1,12 @@
-pools page
+pools page - done
 
-loading overlay
+loading overlay - done
 
-input loading component and testnet testing
+input loading component and testnet testing - done
 
-server to send free test tokens
+server to send free test tokens - done
 
-move pools and swap page from component to pages area
+move pools and swap page from component to pages area - done
 
 Not rendering all pools data at app.js - optimization
 
@@ -15,4 +15,10 @@ Not getting all pools data when loading changes
 SC gasprice change
 
 in FE increase gasPrice for faster txns
+
+adding liquidity tokens in pools table
+
+fee selector at swap
+
+add swap tests
 

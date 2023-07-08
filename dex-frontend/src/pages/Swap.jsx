@@ -23,7 +23,11 @@ const Swap = ({tokenAddresses, tokens, handleLoading, refreshUi, refreshCount}) 
     useEffect(()=>{
         if(!tokens[tokenAddresses[0]]) return
 
-        setToken0(tokens[tokenAddresses[0]])
+        const t0 =  tokens[tokenAddresses[0]]
+        const t0Pairs = Object.keys(t0.pairs)
+        
+        setToken0(t0)
+        setToken1(tokens[t0Pairs])
     }, [tokens])
 
     useEffect(()=>{
@@ -42,30 +46,45 @@ const Swap = ({tokenAddresses, tokens, handleLoading, refreshUi, refreshCount}) 
         setCurrentPoolAddress(token0.pairs[token1.address])
     }, [token0, token1])
 
+    useEffect(()=>{
+        if(!currentPoolAddress) return
+
+
+        if(parseInt(amount0)){
+            fetchAmountOut(amount0)
+        } else{
+            setAmount1("0")
+        }
+    }, [currentPoolAddress])
+
+
+    async function fetchAmountOut(amountIn){
+        if(parseInt(amountIn)) {
+            const amountOut = await getAmountOut(runContractFunction, currentPoolAddress, token0.address, amountIn)
+            setAmount1(amountOut)
+            if(amountOut === 0) {
+                setSwapStatus({display: "Insufficient Liquidity", disabled: true})
+            }
+
+            else if(parseInt(amountIn) > parseInt(token0.balance)){
+                setSwapStatus({display: "Insufficient Wallet Balance", disabled: true})
+            }
+
+            else setSwapStatus({display: "Swap", disabled: false})
+        } else {
+            setAmount1("0")
+            setSwapStatus({display: "Swap", disabled: true})
+        }
+    }
+
+    
+
     const handleAmount0Change = async(e)=>{
         try{
             setAmount0(e.target.value)
             if(!token1.address) return
-
-            let amountOut;
     
-            if(parseInt(e.target.value)) {
-                amountOut = await getAmountOut(runContractFunction, currentPoolAddress, token0.address, e.target.value)
-                if(amountOut === 0) {
-                    setSwapStatus({display: "Insufficient Liquidity", disabled: true})
-                }
-    
-                else if(parseInt(e.target.value) > parseInt(token0.balance)){
-                    setSwapStatus({display: "Insufficient Wallet Balance", disabled: true})
-                }
-    
-                else setSwapStatus({display: "Swap", disabled: false})
-            } else {
-                amountOut = 0
-                setSwapStatus({display: "Swap", disabled: true})
-            }
-            
-            setAmount1(amountOut)
+            fetchAmountOut(e.target.value)
         } catch(e){
             handleLoading(false)
             setSwapStatus({display: "Swap", disabled: true})
@@ -101,13 +120,14 @@ const Swap = ({tokenAddresses, tokens, handleLoading, refreshUi, refreshCount}) 
         } catch(e){
             handleLoading(false)
             setSwapStatus({display: "Swap", disabled: false})
+            
             error(e.error?.message || e.message)
         }
     }
 
     return token0?.address ? 
         (<div className="input-area">
-        <GetTokensBtn tokens={tokens} web3={web3} />
+        <GetTokensBtn tokens={tokens} handleLoading={handleLoading} web3={web3} />
              <h2>Swap with EASE</h2>
              <form onSubmit={handleSwap}>
                  <div className="input-area__box">
@@ -124,7 +144,7 @@ const Swap = ({tokenAddresses, tokens, handleLoading, refreshUi, refreshCount}) 
                  <div className="input-area__box">
                      <input placeholder="Please select a Token" readOnly value={amount1} name="amount1" type="number" />
                      <select value={token1.address} onChange={handletoken1Select} name="token2" id="token2">
-                        <option value={null}>select</option>
+                        {/* <option >select</option> */}
                         {Object.keys(token0.pairs).map((token, i)=>
                             <option key={i} value={tokens[token].address}>{tokens[token].name}</option>
                         )}

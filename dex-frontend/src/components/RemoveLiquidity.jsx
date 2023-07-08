@@ -8,7 +8,7 @@ import { utils, BigNumber } from "ethers";
 import { getAmountsOnRemovingLiquidity, removeLiquidity } from '../hooks/pool';
 import { error, success } from '../utils/toastWrapper';
 
-export const RemoveLiquidity = ({modalOpen, handleModalClose, pool, handleLoading}) => {
+export const RemoveLiquidity = ({modalOpen, handleModalClose, pool, handleLoading, refreshUi}) => {
     const {token0, token1} = pool
     const [selectedPercentage, setSelectedPercentage] = useState("10")
     const [liquidityTokens, setLiquidityTokens] = useState("")
@@ -60,11 +60,14 @@ export const RemoveLiquidity = ({modalOpen, handleModalClose, pool, handleLoadin
       
       try{
         if(parseInt(amount0) && parseInt(amount1)){
+
           handleLoading(true)
           const {amount0, amount1} = await removeLiquidity(runContractFunction, pool.address, liquidityPercentage)
           success(`Burnt ${selectedPercentage}% of Your Liquidity tokens for ${amount0} ${token0.name} ${amount1} ${token1.name}`)
           handleModalClose(true)
+          refreshUi()
           handleLoading(false)
+
         }
       } catch(e){
         handleLoading(false)

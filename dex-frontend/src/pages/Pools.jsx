@@ -30,7 +30,7 @@ const Pools = ({poolAddresses, tokens, tokenAddresses, refreshUi, refreshCount, 
 
     return ( 
         <div className="pool">
-            <PoolTable handleLoading={handleLoading} pools={pools} />
+            <PoolTable refreshUi={refreshUi} handleLoading={handleLoading} pools={pools} />
         </div>
     );
 }

@@ -17,7 +17,8 @@ export async function swap(runContractFunction, contractAddress, _tokenIn, amoun
     amountIn = utils.parseEther(amountIn.toString()).toString()
     const tx = await poolCaller(runContractFunction, contractAddress, "swap", {_tokenIn, amountIn})
     const receipt = await tx.wait(1)
-    const {amountOut} = receipt.events[2].args
+    const event = receipt.events.find(event=>event.event === "Swapped")
+    const {amountOut} = event.args
 
     return parseFloat(utils.formatUnits(amountOut, "ether")).toFixed().toString()
 }
@@ -28,8 +29,8 @@ export async function addLiquidity(runContractFunction, contractAddress, amount0
 
     const tx = await poolCaller(runContractFunction, contractAddress,"addLiquidity", {amount0, amount1})
     const receipt = await tx.wait(1)
-    console.log(receipt)
-    const {liquidityToken} = receipt.events[3].args
+    const event = receipt.events.find(event=>event.event === "AddedLiquidity")
+    const {liquidityToken} = event.args
     return parseFloat(utils.formatUnits(liquidityToken, "ether")).toFixed().toString()
 }
 
@@ -38,8 +39,8 @@ export async function removeLiquidity(runContractFunction, contractAddress, liqu
     console.log(liquidityTokens)
     const tx = await poolCaller(runContractFunction, contractAddress,"removeLiquidity", {liquidityTokens})
     const receipt = await tx.wait(1)
-    console.log(receipt)
-    let {amount0, amount1} = receipt.events[3].args
+    const event = receipt.events.find(event=>event.event === "RemovedLiquidity")
+    let {amount0, amount1} = event.args
     amount0 = utils.formatUnits(amount0, "ether")
     amount1 = utils.formatUnits(amount1, "ether")
     return {amount0, amount1}
@@ -47,7 +48,7 @@ export async function removeLiquidity(runContractFunction, contractAddress, liqu
 
 export async function getAmountOut(runContractFunction, contractAddress,_tokenIn, amountIn){
     amountIn = utils.parseEther(amountIn).toString()
-    const amountOut = await poolCaller(runContractFunction, contractAddress, "getAmountOut", {_tokenIn, amountIn})
+    const amountOut = (await poolCaller(runContractFunction, contractAddress, "getAmountOut", {_tokenIn, amountIn}))[0]
     if(amountOut._hex.startsWith("0x00")) return 0
     return parseFloat(utils.formatUnits(amountOut, "ether")).toFixed(2).toString()
 }
@@ -68,6 +69,11 @@ export async function getFee(runContractFunction, contractAddress){
     return fee
 }
 
+export async function getLiquidityTokenBalance(runContractFunction, contractAddress, account){
+    let balance = await poolCaller(runContractFunction, contractAddress, "balanceOf", {account})
+    return parseFloat(utils.formatUnits(balance, "ether")).toFixed(2).toString()
+}
+
 export async function getLiquidityRatio(runContractFunction, contractAddress, tokenInAddress, amountIn){
     amountIn = utils.parseEther(amountIn).toString()
     let token1Amount = await poolCaller(runContractFunction, contractAddress, "getLiquidityRatio", {_tokenIn: tokenInAddress, amountIn})
@@ -79,3 +85,4 @@ export async function getAmountsOnRemovingLiquidity(runContractFunction, contrac
     let amounts = await poolCaller(runContractFunction, contractAddress, "getAmountsOnRemovingLiquidity", {liquidityTokens})
     return amounts.map(amount=>parseFloat(utils.formatUnits(amount, "ether")).toFixed(2).toString())
 }
+

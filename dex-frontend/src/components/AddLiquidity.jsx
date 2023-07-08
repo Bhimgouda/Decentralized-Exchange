@@ -7,7 +7,7 @@ import { useWeb3Contract } from 'react-moralis';
 import { error, success } from '../utils/toastWrapper';
 import { approveToken } from '../hooks/tokens';
 
-export const AddLiquidity = ({modalOpen, handleModalClose, pool, handleLoading}) => {
+export const AddLiquidity = ({modalOpen, handleModalClose, pool, handleLoading, refreshUi}) => {
   const {token0, token1} = pool;
 
   const {runContractFunction} = useWeb3Contract()
@@ -41,13 +41,16 @@ export const AddLiquidity = ({modalOpen, handleModalClose, pool, handleLoading})
     if(parseInt(amount0) && parseInt(amount1)){
       if(parseInt(amount0) <= parseInt(token0.balance) && parseInt(amount1) <= parseInt(token1.balance)){
         try{
+
           handleLoading(true)
           await approveToken(token0.address, pool.address, amount0)
           await approveToken(token1.address, pool.address, amount1)
           const liquidityTokens = await addLiquidity(runContractFunction, pool.address, amount0, amount1)
           success(`You have got ${liquidityTokens} Liquidity Tokens`);
           handleModalClose(true)
+          refreshUi()
           handleLoading(false)
+          
         } catch(e){
           handleLoading(false)
           console.log(e)

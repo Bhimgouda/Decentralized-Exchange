@@ -2,7 +2,6 @@
 pragma solidity ^0.8.7;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "./LiquidityToken.sol";
 
@@ -11,7 +10,6 @@ error Pool__ZeroLiquidityToken();
 error Pool__InvalidToken();
 
 contract Pool is LiquidityToken, ReentrancyGuard {
-    using SafeMath for uint256;
 
     IERC20 private immutable i_token0;
     IERC20 private immutable i_token1;
@@ -59,38 +57,17 @@ contract Pool is LiquidityToken, ReentrancyGuard {
 
     function swap(address _tokenIn, uint256 amountIn) external nonReentrant {
         // Objective: To Find amount of Token Out
+        (uint256 amountOut, uint256 resIn, uint256 resOut, bool isToken0) = getAmountOut(_tokenIn, amountIn);
 
-        require(
-            _tokenIn == address(i_token0) || _tokenIn == address(i_token1),
-            "Invalid Token"
-        );
+        IERC20 token0 = i_token0; // gas optimization
+        IERC20 token1 = i_token1; // gas optimization
 
-        bool isToken0 = _tokenIn == address(i_token0) ? true : false;
-
-        (
-            IERC20 tokenIn,
-            IERC20 tokenOut,
-            uint256 resIn,
-            uint256 resOut
-        ) = isToken0
-                ? (i_token0, i_token1, s_reserve0, s_reserve1)
-                : (i_token1, i_token0, s_reserve1, s_reserve0);
+        (uint256 res0, uint256 res1, IERC20 tokenIn, IERC20 tokenOut) = isToken0
+            ? (resIn + amountIn, resOut - amountOut, token0, token1)
+            : (resOut - amountOut, resIn + amountIn, token1, token0);
 
         bool success = tokenIn.transferFrom(msg.sender, address(this), amountIn);
         require(success, "Swap Failed");
-
-        // xy = k
-        // (x + dx)(y - dy) = k
-        // xy - xdy + dxy -dxdy = xy (k=xy)
-        // dy(x + dx) = dxy
-        // dy = dxy/(x+dx)
-        uint256 amountInWithFee = (amountIn * (10000 - i_fee)) / 10000;
-        uint256 amountOut = (amountInWithFee * resOut) /
-            (resIn + amountInWithFee);
-
-        (uint256 res0, uint256 res1) = isToken0
-            ? (resIn + amountIn, resOut - amountOut)
-            : (resOut - amountOut, resIn + amountIn);
 
         _updateLiquidity(res0, res1);
         tokenOut.transfer(msg.sender, amountOut);
@@ -99,14 +76,19 @@ contract Pool is LiquidityToken, ReentrancyGuard {
     }
 
     function addLiquidity(uint256 amount0, uint256 amount1) external nonReentrant {
+        uint256 reserve0 = s_reserve0; // gas optimization
+        uint256 reserve1 = s_reserve1; // gas optimization
         // x/y = dx/dy
-        if (s_reserve0 > 0 || s_reserve1 > 0) {
-            if (s_reserve0 / s_reserve1 != amount0 / amount1)
+        if (reserve0 > 0 || reserve1 > 0) {
+            if (reserve0 / reserve1 != amount0 / amount1)
                 revert Pool__InvalidTokenRatio();
         }
 
-        i_token0.transferFrom(msg.sender, address(this), amount0);
-        i_token1.transferFrom(msg.sender, address(this), amount1);
+        IERC20 token0 = i_token0; // gas optimization
+        IERC20 token1 = i_token1; // gas optimization
+
+        token0.transferFrom(msg.sender, address(this), amount0);
+        token1.transferFrom(msg.sender, address(this), amount1);
 
         // The Liquidity token minted should be proportional to Liquidity Provided
         // x + dx/x = y + dy/y
@@ -118,20 +100,20 @@ contract Pool is LiquidityToken, ReentrancyGuard {
         uint256 liquidityTokenSupply = totalSupply();
         uint256 liquidityTokens;
         if (liquidityTokenSupply > 0) {
-            liquidityTokens = (amount0 * liquidityTokenSupply) / s_reserve0;
+            liquidityTokens = (amount0 * liquidityTokenSupply) / reserve0;
         } else {
             liquidityTokens = _sqrt(amount0 * amount1);
         }
 
         if (liquidityTokens == 0) revert Pool__ZeroLiquidityToken();
         _mint(msg.sender, liquidityTokens);
-        _updateLiquidity(s_reserve0 + amount0, s_reserve1 + amount1);
+        _updateLiquidity(reserve0 + amount0, reserve1 + amount1);
 
         emit AddedLiquidity(
             liquidityTokens,
-            address(i_token0),
+            address(token0),
             amount0,
-            address(i_token1),
+            address(token1),
             amount1
         );
     }
@@ -142,14 +124,17 @@ contract Pool is LiquidityToken, ReentrancyGuard {
         _burn(msg.sender, liquidityTokens);
         _updateLiquidity(s_reserve0 - amount0, s_reserve1 - amount1);
 
-        i_token0.transfer(msg.sender, amount0);
-        i_token1.transfer(msg.sender, amount1);
+        IERC20 token0 = i_token0; // gas optimization
+        IERC20 token1 = i_token1; // gas optimization
+
+        token0.transfer(msg.sender, amount0);
+        token1.transfer(msg.sender, amount1);
 
         emit RemovedLiquidity(
             liquidityTokens,
-            address(i_token0),
+            address(token0),
             amount0,
-            address(i_token1),
+            address(token1),
             amount1
         );
     }
@@ -174,7 +159,7 @@ contract Pool is LiquidityToken, ReentrancyGuard {
     function getAmountOut(
         address _tokenIn,
         uint256 amountIn
-    ) public view returns (uint256 amountOut) {
+    ) public view returns (uint256, uint256, uint256, bool) {
         require(
             _tokenIn == address(i_token0) || _tokenIn == address(i_token1),
             "Invalid Token"
@@ -182,11 +167,25 @@ contract Pool is LiquidityToken, ReentrancyGuard {
 
         bool isToken0 = _tokenIn == address(i_token0) ? true : false;
 
-        (uint256 resIn, uint256 resOut) = isToken0
-            ? (s_reserve0, s_reserve1)
-            : (s_reserve1, s_reserve0);
+        uint256 reserve0 = s_reserve0; // gas optimization
+        uint256 reserve1 = s_reserve1; // gas optimization
+
+        (
+            uint256 resIn,
+            uint256 resOut
+        ) = isToken0
+                ? (reserve0, reserve1)
+                : (reserve1, reserve0);
+
+
+        // xy = k
+        // (x + dx)(y - dy) = k
+        // xy - xdy + dxy -dxdy = xy (k=xy)
+        // dy(x + dx) = dxy
+        // dy = dxy/(x+dx)
         uint256 amountInWithFee = (amountIn * (10000 - i_fee)) / 10000;
-        amountOut = (amountInWithFee * resOut) / (resIn + amountInWithFee);
+        uint256 amountOut = (amountInWithFee * resOut) /(resIn + amountInWithFee);
+        return (amountOut, resIn, resOut, isToken0);
     }
 
     function getReserves() public view returns (uint256, uint256) {

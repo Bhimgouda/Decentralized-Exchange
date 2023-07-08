@@ -9,7 +9,7 @@ import { Toaster } from 'react-hot-toast';
 import { getAllPools } from "./hooks/poolFactory"
 import { getTokenData } from "./hooks/tokens"
 import { error } from './utils/toastWrapper';
-import { getFee, getReserves } from './hooks/pool';
+import { getFee, getLiquidityTokenBalance, getReserves } from './hooks/pool';
 import CreatePool from './pages/CreatePool';
 import LoadingOverlay from './components/LoadingOverlay';
 import Pools from './pages/Pools';
@@ -41,7 +41,7 @@ function App() {
     if(!isWeb3Enabled || parseInt(chainId) !== CHAIN_ID) return
     setLoading(true)
     fetchPools()
-  }, [isWeb3Enabled, chainId, refreshCount])
+  }, [isWeb3Enabled, chainId, refreshCount, account])
 
   async function fetchPools(){
     try {

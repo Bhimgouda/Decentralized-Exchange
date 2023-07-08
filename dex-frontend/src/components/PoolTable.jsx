@@ -1,10 +1,30 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { AddLiquidity } from "./AddLiquidity";
 import { RemoveLiquidity } from "./RemoveLiquidity";
+import { useMoralis, useWeb3Contract } from "react-moralis";
+import { getLiquidityTokenBalance } from "../hooks/pool";
 
-const PoolTable = ({ pools, handleLoading }) => {
+const PoolTable = ({ pools, handleLoading, refreshUi }) => {
   const [modalType, setModalType] = useState(null);
-  const [currentPool, setCurrentPool] = useState()
+  const [currentPool, setCurrentPool] = useState();
+  const [liquidityTokenBalances, setLiquidityTokenBalances] = useState([])
+
+  const {account} = useMoralis()
+  const {runContractFunction} = useWeb3Contract()
+
+  useEffect(()=>{
+    if(!pools.length) return
+    fetchLiquidityTokenBalance()
+  }, [account, pools])
+
+  async function fetchLiquidityTokenBalance(){
+    const liquidityTokenBal = []
+    for(let pool of pools){
+      const bal = await getLiquidityTokenBalance(runContractFunction, pool.address, account)
+      liquidityTokenBal.push(bal)
+    }
+    setLiquidityTokenBalances(liquidityTokenBal)
+  }
 
   const handleModalOpen = (type, pool) => {
     setModalType(type);
@@ -16,8 +36,8 @@ const PoolTable = ({ pools, handleLoading }) => {
   };
 
   const modalComponents = {
-    addLiquidity: <AddLiquidity handleLoading={handleLoading} pool={currentPool} modalOpen={true} handleModalClose={handleModalClose} />,
-    removeLiquidity: <RemoveLiquidity handleLoading={handleLoading} pool={currentPool} modalOpen={true} handleModalClose={handleModalClose} />
+    addLiquidity: <AddLiquidity refreshUi={refreshUi} handleLoading={handleLoading} pool={currentPool} modalOpen={true} handleModalClose={handleModalClose} />,
+    removeLiquidity: <RemoveLiquidity refreshUi={refreshUi} handleLoading={handleLoading} pool={currentPool} modalOpen={true} handleModalClose={handleModalClose} />
   };
 
   const renderModalComponent = () => modalComponents[modalType];
@@ -32,6 +52,7 @@ const PoolTable = ({ pools, handleLoading }) => {
                 <div className="custom-table-cell">Fee</div>
                 <div className="custom-table-cell">Token 1 Liquidity</div>
                 <div className="custom-table-cell">Token 2 Liquidity</div>
+                <div className="custom-table-cell">Your Liquidity Tokens</div>
                 <div className="custom-table-cell"></div>
                 <div className="custom-table-cell"></div>
         </div>
@@ -42,6 +63,7 @@ const PoolTable = ({ pools, handleLoading }) => {
             <div className="custom-table-cell">{pool.fee}</div>
             <div className="custom-table-cell">{`${pool.reserve0} ${pool.token0.symbol}`}</div>
             <div className="custom-table-cell">{`${pool.reserve1} ${pool.token1.symbol}`}</div>
+            <div className="custom-table-cell">{`${liquidityTokenBalances[index]}`}</div>
             <div className="custom-table-cell">
               <button
                 className="btn"

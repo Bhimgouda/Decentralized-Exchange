@@ -21,7 +21,8 @@ export async function createPool(token0, token1, fee, runContractFunction){
     fee = utils.parseUnits(fee, 2).toString()
     const tx = await poolFactoryCaller("createPool", {token0, token1, fee}, runContractFunction)
     const receipt = await tx.wait(1)
-    const {poolAddress} = receipt.events[0].args
+    const event = receipt.events.find(event=>event.event === "PoolCreated")
+    const {poolAddress} = event.args
     return poolAddress
 }
 
