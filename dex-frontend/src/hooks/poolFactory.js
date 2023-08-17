@@ -6,7 +6,7 @@ const CHAIN_ID = 11155111
 
 const poolFactoryFunctionParams = {
     contractAddress: POOL_FACTORY_ADDRESSES[CHAIN_ID],
-    abi: POOL_FACTORY_ABI
+    abi: POOL_FACTORY_ABI,
 }
 
 function poolFactoryCaller(functionName, params, runContractFunction){

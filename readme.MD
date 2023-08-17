@@ -1,5 +1,7 @@
 # An ERC20 DEX (Decentralized Exchange) like Uniswap
 
+## Hey, If you are here from Linkedin, then definitely give this repo a STAR ⭐
+
 [![DEX](./media-files/dex.png)](https://vimeo.com/843177286?share=copy)
 
 [See Live Demo of the dApp](https://vimeo.com/843177286?share=copy)

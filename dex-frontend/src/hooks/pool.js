@@ -2,12 +2,12 @@ import POOL_ABI from "../constants/poolAbi.json"
 import { utils } from "ethers";
 
 const poolFunctionParams = {
-    abi: POOL_ABI
+    abi: POOL_ABI,
 }
 
 function poolCaller(runContractFunction, contractAddress, functionName, params, ){
     return runContractFunction({
-        params: {...poolFunctionParams, contractAddress, functionName, params},
+        params: {...poolFunctionParams, contractAddress, functionName, params}
     })
 }
 

@@ -3,7 +3,7 @@ import ERC20_ABI from "../constants/erc20Abi.json"
 import { utils, ethers } from "ethers";
 
 const poolFunctionParams = {
-    abi: ERC20_ABI
+    abi: ERC20_ABI,
 }
 
 function poolCaller(runContractFunction, contractAddress, functionName, params, ){

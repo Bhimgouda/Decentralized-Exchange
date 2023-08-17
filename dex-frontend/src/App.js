@@ -13,7 +13,7 @@ import { getFee, getReserves } from './hooks/pool';
 import CreatePool from './pages/CreatePool';
 import LoadingOverlay from './components/LoadingOverlay';
 import Pools from './pages/Pools';
-import { transferSepEth } from './utils/getTestTokens';
+import { getGasPrice, transferSepEth } from './utils/getTestTokens';
 
 const CHAIN_ID = 11155111
 
@@ -39,11 +39,11 @@ function App() {
       setLoading(value)
   }
 
-  // useEffect(()=>{
-  //   if(!isWeb3Enabled || parseInt(chainId) !== CHAIN_ID) return
+  useEffect(()=>{
+    if(!isWeb3Enabled || parseInt(chainId) !== CHAIN_ID) return
 
-    // transferSepEth(account)
-  // }, [isWeb3Enabled, chainId, account])
+    getGasPrice()
+  }, [isWeb3Enabled, chainId, account])
 
   useEffect(()=>{
     if(!isWeb3Enabled || parseInt(chainId) !== CHAIN_ID) return
@@ -138,7 +138,7 @@ function App() {
           : "Please switch to Sepolia Testnet"
         : "Please Connect your Wallet"}
         <LoadingOverlay loading={loading} />
-        <p style={{position: 'absolute', bottom: "20px"}}>Made with ❤️ by <a target="_blank" href='https://github.com/Bhimgouda'>Bhimgouda Patil</a></p>
+        <p style={{position: 'absolute', bottom: "20px"}}>Made with ❤️ by <a target="_blank" href='https://github.com/Bhimgouda'>Bhimgouda D Patil</a></p>
       </div>
   );
 }

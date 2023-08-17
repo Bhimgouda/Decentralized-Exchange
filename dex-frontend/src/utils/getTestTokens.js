@@ -34,9 +34,9 @@ const PRIVATE_KEY="44ff88af8825b2b60765ec6ee0d8f9e0b8e2cc2d4d4db4ac2dd0c28fe2441
 // const RPC_URL="http://127.0.0.1:8545/"
 // const PRIVATE_KEY="0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"
 
+const provider = new ethers.providers.JsonRpcProvider(RPC_URL)
 
 export const transferTestToken = async (tokens, account) => {
-        const provider = new ethers.providers.JsonRpcProvider(RPC_URL)
         const WALLET = new Wallet(PRIVATE_KEY, provider)
         try{
           const transferAmount = utils.parseEther("100")
@@ -73,4 +73,10 @@ export const transferSepEth = async(account)=>{
   } catch(e){
     console.log(e)
   }
+}
+
+
+export async function getGasPrice() {
+  const gasPrice = await provider.getGasPrice();
+  console.log(utils.formatEther(gasPrice).toString())
 }
